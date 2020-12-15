@@ -1,0 +1,105 @@
+@import "./base.scss";
+
+.svg-button {
+  cursor: pointer;
+}
+
+.banner-container {
+  position: relative;
+
+  .banner {
+    z-index: 1000;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+
+    .banner-actions {
+      display: none;
+      justify-content: flex-end;
+      padding: 10px;
+      .svg-button {
+        height: 15px;
+        width: 15px;
+        &:hover {
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+  }
+
+  &:hover {
+    background: rgba(116, 113, 99, 0.4);
+    .banner-actions {
+      display: flex;
+    }
+  }
+
+  .active-banner {
+    z-index: 1000;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    .svg-button {
+      display: none;
+    }
+  }
+}
+
+.artwork-image-container {
+  position: relative;
+
+  .artwork-image-hover-effect {
+    z-index: 1000;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+
+    .artwork-image-actions {
+      display: none;
+      .svg-button {
+        height: 15px;
+        width: 15px;
+        &:hover {
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+
+    &:hover {
+      background: rgba(116, 113, 99, 0.4);
+      .artwork-image-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px;
+      }
+    }
+  }
+
+  .active-artwork-image-hover-effect {
+    z-index: 1000;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    .svg-button {
+      display: none;
+    }
+  }
+}

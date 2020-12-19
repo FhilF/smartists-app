@@ -209,6 +209,7 @@ function UserOwnedStudio(props) {
                     key={index}
                     featuredProject={featuredProject}
                     isSelf={isSelf}
+                    userSession={userSession}
                   />
                 );
               })}

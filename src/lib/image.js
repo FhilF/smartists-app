@@ -63,6 +63,24 @@ export const uploadFile = async (userSession, dir, file, options) => {
   return gaialink;
 };
 
+export const updateFile = async (userSession, dir, id, file, options) => {
+  let extension;
+  if (file.type === "image/png") {
+    extension = ".png";
+  } else if (file.type === "image/jpg") {
+    extension = ".jpg";
+  } else if (file.type === "image/jpeg") {
+    extension = ".jpeg";
+  } else {
+    extension = "";
+  }
+
+  const filename = `${dir}/${id}`;
+  const gaialink = await userSession.putFile(filename, file, options);
+  return gaialink;
+};
+
+
 export const handleCompress = async (file, a) => {
   try {
     const compressedFile = await imageCompression(file, uploadImageOptions);

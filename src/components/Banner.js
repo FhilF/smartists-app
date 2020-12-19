@@ -5,7 +5,6 @@ import classNames from "classnames";
 
 function Banner() {
   const [activeAction, setActiveAction] = useState(false);
-  console.log(activeAction);
   return (
     <div>
       <div className="banner-container" style={{ position: "relative" }}>

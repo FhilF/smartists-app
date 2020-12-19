@@ -42,9 +42,9 @@ function DeleteSampleArtwork(props) {
   };
 
   return (
-    <>
+    <div>
       <img
-        className="svg-button"
+        className="action-button"
         src={close}
         alt="close"
         onClick={(e) => {
@@ -99,7 +99,7 @@ function DeleteSampleArtwork(props) {
           </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
 

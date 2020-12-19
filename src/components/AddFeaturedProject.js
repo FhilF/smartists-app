@@ -4,8 +4,19 @@ import { isEmpty } from "../lib/data";
 import plusSign from "../assets/icons/plus.svg";
 
 import { uploadFile } from "../lib/image";
+import AddMultipleIsLookingForComponent from "./AddMultipleIsLookingFor";
 
 import ProjectModel from "../models/Project";
+
+const artistSkills = [
+  "Writing",
+  "Visuals",
+  "Music",
+  "Performing",
+  "Digital Editing",
+];
+
+const persons = ["Funding", "Clients", "Ambassadors / Supporters"];
 
 function AddFeaturedProject(props) {
   const { userSession, studio } = props;
@@ -14,6 +25,10 @@ function AddFeaturedProject(props) {
   const [tempImgUrls, setTempImgUrls] = useState();
   const [isCompressing, setIsCompressing] = useState(false);
   const [isFormLoading, setIsFormLoading] = useState(false);
+
+  const [other, setOther] = useState(false);
+
+  const [dynamicInput, setDynamicInput] = useState({ values: [] });
 
   const handleForm = () => {
     var x = document.getElementsByTagName("BODY")[0];
@@ -35,6 +50,11 @@ function AddFeaturedProject(props) {
     isLookingFor: [],
     image: null,
   });
+
+  // useEffect(() => {
+  //   console.log(featuredProject.isLookingFor)
+
+  // }, [featuredProject.isLookingFor])
 
   const handleRequiredSkill = (e) => {
     let newSkills = [...featuredProject.requiredSkills, e.target.value];
@@ -72,29 +92,72 @@ function AddFeaturedProject(props) {
     });
   };
 
+  const modifySkills = (requiredSkills) => {
+    let newSkills = [];
+    requiredSkills.forEach((skill, index) => {
+      newSkills = [...newSkills, { skill: skill, status: false }];
+    });
+
+    return newSkills;
+  };
+
+  const modifyIsLookingFor = (isLookingForOtherOptions) => {
+    let newLookingFor = [];
+    isLookingForOtherOptions.forEach((lookingFor, index) => {
+      if (isEmpty(lookingFor)) {
+        newLookingFor = [
+          ...newLookingFor,
+          { option: lookingFor, status: false },
+        ];
+      }
+    });
+
+    return newLookingFor;
+  };
+
   const handleSubmit = async () => {
     setIsFormLoading(true);
-    
+    let newFeaturedProject;
+    newFeaturedProject = { ...featuredProject };
     if (
-      !isEmpty(featuredProject.title) ||
-      !isEmpty(featuredProject.tagline) ||
-      !isEmpty(featuredProject.description) ||
-      !featuredProject.image ||
-      featuredProject.requiredSkills.length === 0 ||
-      featuredProject.isLookingFor.length === 0
+      !isEmpty(newFeaturedProject.title) ||
+      !isEmpty(newFeaturedProject.tagline) ||
+      !isEmpty(newFeaturedProject.description) ||
+      !newFeaturedProject.image ||
+      newFeaturedProject.requiredSkills.length === 0
     ) {
       console.log({ result: "error", info: "cannot be empty" });
       setIsFormLoading(false);
       return null;
     }
 
-    handleCompress(featuredProject.image)
+    if (newFeaturedProject.requiredSkills.length !== 0) {
+      newFeaturedProject.requiredSkills = modifySkills(
+        newFeaturedProject.requiredSkills
+      );
+    }
+
+    if (newFeaturedProject.isLookingFor.length !== 0) {
+      newFeaturedProject.isLookingFor = modifyIsLookingFor(
+        newFeaturedProject.isLookingFor
+      );
+    }
+
+    if (other) {
+      newFeaturedProject.isLookingFor = [
+        ...newFeaturedProject.isLookingFor,
+        ...modifyIsLookingFor(dynamicInput.values),
+      ];
+    }
+
+    setIsCompressing(true);
+    handleCompress(newFeaturedProject.image)
       .then((res) => {
         if (res.result === "success") {
           setIsCompressing(false);
           return uploadFile(
             userSession,
-            "smartists/featuredArtwork",
+            "smartists/featuredProject",
             res.data,
             {
               encrypt: false,
@@ -106,31 +169,26 @@ function AddFeaturedProject(props) {
         }
       })
       .then((res) => {
-        featuredProject.image = res;
+        newFeaturedProject.image = res;
         const projectModel = new ProjectModel({
-          ...featuredProject,
+          ...newFeaturedProject,
           studioId: studio.attrs._id,
+          status: false,
         });
         return projectModel.save();
       })
       .then((res) => {
         console.log(res);
+        setIsFormLoading(false);
       })
       .catch((error) => {
         console.log(error);
         setIsCompressing(false);
+        setIsFormLoading(false);
       });
   };
 
-  const artistSkills = [
-    "Writing",
-    "Visuals",
-    "Music",
-    "Performing",
-    "Digital Editing",
-  ];
-
-  const persons = ["Funding", "Clients", "Ambassadors / Supporters", "Other"];
+  
   return (
     <div>
       Add a featured project looking for collaborators
@@ -356,6 +414,27 @@ function AddFeaturedProject(props) {
                               </div>
                             );
                           })}
+
+                          <div>
+                            <input
+                              type="checkbox"
+                              id={"person4"}
+                              name="person"
+                              value={other}
+                              onChange={(e) => {
+                                setOther(!other);
+                              }}
+                            />
+                            <label htmlFor={"person4"}>Other</label>
+                            <br />
+                          </div>
+
+                          {other && (
+                            <AddMultipleIsLookingForComponent
+                              dynamicInput={dynamicInput}
+                              setDynamicInput={setDynamicInput}
+                            />
+                          )}
                         </div>
                       </div>
                     </div>

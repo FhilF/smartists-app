@@ -3,6 +3,78 @@
 .svg-button {
   cursor: pointer;
 }
+.edit-image-container {
+  position: relative;
+
+  .edit-image-action-container {
+    z-index: 1000;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+
+    .edit-image-actions {
+      justify-content: flex-end;
+      display: flex;
+
+      div {
+        padding: 5px;
+        .delete-image-action-button {
+          display: block;
+          width: 15px;
+          height: 15px;
+          &:hover {
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+    }
+
+    // .edit-image-actions > div .action-button{
+    //   display: none;
+    // }
+  }
+}
+
+.featured-project-container {
+  position: relative;
+
+  .featured-project-action-container {
+    z-index: 1000;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+
+    .featured-project-actions {
+      justify-content: flex-end;
+      display: flex;
+    }
+
+    .featured-project-actions > div .action-button {
+      display: none;
+    }
+
+    &:hover {
+      .featured-project-actions > div .action-button {
+        display: block;
+      }
+    }
+
+    &.active {
+      .featured-project-actions > div .action-button {
+        display: none;
+      }
+    }
+  }
+}
 
 .banner-container {
   position: relative;
@@ -54,10 +126,10 @@
   }
 }
 
-.artwork-image-container {
+.sample-artwork-container {
   position: relative;
 
-  .artwork-image-hover-effect {
+  .sample-artwork-action-container {
     z-index: 1000;
     position: absolute;
     width: 100%;
@@ -67,9 +139,11 @@
     left: 0;
     bottom: 0;
 
-    .artwork-image-actions {
-      display: none;
-      .svg-button {
+    .sample-artwork-actions {
+      justify-content: flex-end;
+      display: flex;
+
+      div .action-button {
         height: 15px;
         width: 15px;
         &:hover {
@@ -79,27 +153,21 @@
       }
     }
 
+    .sample-artwork-actions > div .action-button {
+      display: none;
+    }
+
     &:hover {
       background: rgba(116, 113, 99, 0.4);
-      .artwork-image-actions {
-        display: flex;
-        justify-content: flex-end;
-        padding: 10px;
+      .sample-artwork-actions > div .action-button {
+        display: block;
       }
     }
-  }
 
-  .active-artwork-image-hover-effect {
-    z-index: 1000;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    .svg-button {
-      display: none;
+    &.active {
+      .sample-artwork-actions > div .action-button {
+        display: none;
+      }
     }
   }
 }

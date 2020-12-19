@@ -5,6 +5,8 @@ import edit from "../assets/icons/edit.svg";
 
 import placeHolder from "../assets/icons/placeholder-thumb.svg";
 
+import classNames from "classnames";
+
 function SampleArtwork(props) {
   const { index, artwork, studio } = props;
   const [activeAction, setActiveAction] = useState(false);
@@ -18,9 +20,7 @@ function SampleArtwork(props) {
     <div>
       <div>
         <div>
-          <div
-            className="artwork-image-container"
-          >
+          <div className="sample-artwork-container">
             <div
               style={{
                 backgroundImage: `url(${
@@ -42,23 +42,18 @@ function SampleArtwork(props) {
             />
 
             <div
-              className={
-                activeAction
-                  ? "active-artwork-image-hover-effect"
-                  : "artwork-image-hover-effect"
-              }
+              className={classNames(
+                "sample-artwork-action-container",
+                activeAction ? "active" : null
+              )}
             >
-              <div>
-                <div className="artwork-image-actions">
-                  <DeleteSampleArtworkComponent
-                    setActiveAction={setActiveAction}
-                    activeAction={activeAction}
-                    studio={studio}
-                    index={index}
-                  />
-                  {/* <img className="svg-button" src={edit} alt="close" /> */}
-                </div>
-                <div></div>
+              <div className="sample-artwork-actions">
+                <DeleteSampleArtworkComponent
+                  setActiveAction={setActiveAction}
+                  activeAction={activeAction}
+                  studio={studio}
+                  index={index}
+                />
               </div>
             </div>
           </div>

@@ -21,13 +21,11 @@ function DeleteSampleArtwork(props) {
     const artworkForDelete = studio.attrs.artworks[index];
     const result = /[^/]*$/.exec(artworkForDelete.image)[0];
     const file = "smartists/featuredArtwork/" + result;
-    artworks.splice(index, 1);
-
-    console.log(file)
-
+      
     userSession
       .deleteFile(file)
-      .then(() => {
+      .then((res) => {
+        console.log(res);
         studio.update({
           artworks: artworks,
         });

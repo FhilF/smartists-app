@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { handleMediaInputChange, handleCompress } from "../lib/image";
+import { handleMediaInputChange, handleCompress, uploadFile } from "../lib/image";
 import { isEmpty } from "../lib/data";
 import close from "../assets/icons/close.svg";
 
@@ -172,21 +172,23 @@ function EditFeaturedProject(props) {
   const handleSubmit = async () => {
     const dataForSubmission = { ...newFeaturedProject };
     if (rawImgUrl) {
-      console.log(rawImgUrl);
-      console.log(dataForSubmission);
       const featturedProjectImageForDelete = dataForSubmission.image;
       const result = /[^/]*$/.exec(featturedProjectImageForDelete)[0];
-      console.log(result);
-      console.log(userSession);
+      const file = "smartists/featuredProject/" + result;
+      console.log(file);
+      console.log(featuredProject)
 
-      handleCompress(rawImgUrl)
+      userSession
+        .deleteFile(file)
+        .then((res) => {
+          return handleCompress(rawImgUrl);
+        })
         .then((res) => {
           if (res.result === "success") {
             setIsCompressing(false);
-            return updateFile(
+            return uploadFile(
               userSession,
-              "smartists/featuredArtwork",
-              result,
+              "smartists/featuredProject",
               res.data,
               {
                 encrypt: false,
@@ -198,25 +200,16 @@ function EditFeaturedProject(props) {
           }
         })
         .then((res) => {
-          console.log(res)
-          // const data = {
-          //   title: artwork.title,
-          //   description: artwork.description,
-          //   image: res,
-          // };
-          // const newArtworks = [...studio.attrs.artworks, data];
-          // studio.update({
-          //   artworks: newArtworks,
-          // });
-
-          // return studio.save();
+          featuredProject.update({
+            image: res,
+          });
+          return featuredProject.save();
         })
-        // .then((res) => {
-        //   console.log(res);
-        // })
-        .catch((error) => {
-          console.log(error);
-          setIsCompressing(false);
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.error(err);
         });
     }
   };

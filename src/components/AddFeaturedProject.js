@@ -28,9 +28,9 @@ function AddFeaturedProject(props) {
 
   const [other, setOther] = useState(false);
 
-  const [dynamicInput, setDynamicInput] = useState({ values: [] });
+  const [dynamicInput, setDynamicInput] = useState([]);
 
-  const handleForm = () => {
+  const handleModal = () => {
     var x = document.getElementsByTagName("BODY")[0];
     if (window.getComputedStyle(x).overflow === "visible") {
       document.body.style.overflow = "hidden";
@@ -95,7 +95,7 @@ function AddFeaturedProject(props) {
   const modifySkills = (requiredSkills) => {
     let newSkills = [];
     requiredSkills.forEach((skill, index) => {
-      newSkills = [...newSkills, { skill: skill, status: false }];
+      newSkills = [...newSkills, { value: skill, status: false }];
     });
 
     return newSkills;
@@ -107,7 +107,21 @@ function AddFeaturedProject(props) {
       if (isEmpty(lookingFor)) {
         newLookingFor = [
           ...newLookingFor,
-          { option: lookingFor, status: false },
+          { value: lookingFor, status: false },
+        ];
+      }
+    });
+
+    return newLookingFor;
+  };
+
+  const modifyIsLookingForOther = (isLookingForOtherOptions) => {
+    let newLookingFor = [];
+    isLookingForOtherOptions.forEach((lookingFor, index) => {
+      if (isEmpty(lookingFor.value)) {
+        newLookingFor = [
+          ...newLookingFor,
+          lookingFor
         ];
       }
     });
@@ -146,10 +160,10 @@ function AddFeaturedProject(props) {
     if (other) {
       newFeaturedProject.isLookingFor = [
         ...newFeaturedProject.isLookingFor,
-        ...modifyIsLookingFor(dynamicInput.values),
+        ...modifyIsLookingForOther(dynamicInput),
       ];
     }
-
+    
     setIsCompressing(true);
     handleCompress(newFeaturedProject.image)
       .then((res) => {
@@ -196,7 +210,7 @@ function AddFeaturedProject(props) {
         <button
           onClick={(e) => {
             e.preventDefault();
-            handleForm();
+            handleModal();
           }}
         >
           Add
@@ -446,7 +460,7 @@ function AddFeaturedProject(props) {
                         value="Cancel"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleForm();
+                          handleModal();
                         }}
                       />
                       <input type="submit" value="Submit" />

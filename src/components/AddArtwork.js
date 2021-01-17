@@ -38,7 +38,13 @@ function AddArtWork(props) {
     return str;
   }
 
-  const handleForm = () => {
+  const handleModal = () => {
+    var x = document.getElementsByTagName("BODY")[0];
+    if (window.getComputedStyle(x).overflow === "visible") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "visible";
+    }
     setShowForm(!showForm);
   };
 
@@ -99,10 +105,10 @@ function AddArtWork(props) {
       <div
         onClick={(e) => {
           e.preventDefault();
-          handleForm();
+          handleModal();
         }}
         style={{
-          border: "black 1px dotted",
+          border: "black 1px dashed",
           width: "180px",
           height: "180px",
           display: "flex",
@@ -238,7 +244,7 @@ function AddArtWork(props) {
                         value="Cancel"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleForm();
+                          handleModal();
                         }}
                       />
                       <input type="submit" value="Submit" />

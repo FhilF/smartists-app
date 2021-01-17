@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useConnect } from "@blockstack/connect";
 
 function ArtistForm(props) {
-  const { profile, setProfile } = props;
+  const { profile, setProfile, formLoading } = props;
   const handleArtistSkill = (e) => {
     let newSkills = [...profile.isArtist.info.skills, e.target.value];
     if (profile.isArtist.info.skills.includes(e.target.value)) {
@@ -43,53 +43,66 @@ function ArtistForm(props) {
     "Digital Editing",
   ];
   return (
-    <div id="artist-form" style={{ margin: "0 10px 0 10px" }}>
+    <div id="artist-form">
+      <div>
+        <h4 className="component-header">
+          Describe yourself as an Author or Artist
+        </h4>
+      </div>
       <div id="artist-skills">
-        <p>Your skills?</p>
-        {artistSkills.map((skill, index) => {
-          return (
-            <div key={index}>
-              <input
-                type="checkbox"
-                id={"skills" + index}
-                name="artistSkills"
-                value={skill}
-                onChange={(e) => {
-                  handleArtistSkill(e);
-                }}
-              />
-              <label htmlFor={"skills" + index}>{skill}</label>
-              <br />
-            </div>
-          );
-        })}
+        <p className="input-label mt-10">
+          What is/are your skills?<span className="required">*</span>
+        </p>
+        <div className="checkbox-group mt-10">
+          {artistSkills.map((skill, index) => {
+            return (
+              <div className="checkbox-root" key={index}>
+                <input
+                  type="checkbox"
+                  id={"skills" + index}
+                  name="artistSkills"
+                  value={skill}
+                  onChange={(e) => {
+                    handleArtistSkill(e);
+                  }}
+                  disabled={formLoading}
+                />
+                <label htmlFor={"skills" + index}>{skill}</label>
+                <br />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div id="artist-demand">
-        <br />
-        <p>Are you open to work on demand?</p>
-        <input
-          type="radio"
-          id="workDemandYes"
-          name="workDemandOption"
-          value="Yes"
-          onChange={(e) => {
-            handleWorkDemand(e);
-          }}
-        />
-        <label htmlFor="workDemandYes">Yes</label>
-        <br />
-        <input
-          type="radio"
-          id="workDemandNo"
-          name="workDemandOption"
-          value="No"
-          onChange={(e) => {
-            handleWorkDemand(e);
-          }}
-        />
-        <label htmlFor="workDemandNo">No</label>
-        <br />
+        <p className="input-label mt-10">
+          Are you open to work on demand?<span className="required">*</span>
+        </p>
+        <div className="mt-10">
+          <input
+            type="radio"
+            id="workDemandYes"
+            name="workDemandOption"
+            value="Yes"
+            onChange={(e) => {
+              handleWorkDemand(e);
+            }}
+            disabled={formLoading}
+          />
+          <label htmlFor="workDemandYes">Yes</label>
+          <input
+            type="radio"
+            id="workDemandNo"
+            name="workDemandOption"
+            value="No"
+            onChange={(e) => {
+              handleWorkDemand(e);
+            }}
+            disabled={formLoading}
+          />
+          <label htmlFor="workDemandNo">No</label>
+        </div>
       </div>
     </div>
   );

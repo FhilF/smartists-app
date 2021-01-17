@@ -8,11 +8,7 @@ export default class Studio extends Model {
       type: String,
       decrypted: true,
     },
-    banner: {
-      type: String,
-      decrypted: true,
-    },
-    artworks: {
+    featuredPortfolio: {
       type: String,
       decrypted: true,
     },

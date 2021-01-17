@@ -11,7 +11,14 @@ function DeleteSampleArtwork(props) {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleForm = () => {
+  const handleModal = () => {
+    var x = document.getElementsByTagName("BODY")[0];
+    if (window.getComputedStyle(x).overflow === "visible") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "visible";
+    }
+
     setActiveAction(!activeAction);
     setShowForm(!showForm);
   };
@@ -21,16 +28,29 @@ function DeleteSampleArtwork(props) {
     const artworkForDelete = studio.attrs.artworks[index];
     const result = /[^/]*$/.exec(artworkForDelete.image)[0];
     const file = "smartists/featuredArtwork/" + result;
-      
+    artworks.splice(index, 1);
     userSession
       .deleteFile(file)
-      .then((res) => {
-        console.log(res);
-        studio.update({
-          artworks: artworks,
-        });
-        return studio.save();
-      })
+      .then(
+        (res) => {
+          studio.update({
+            artworks: artworks,
+          });
+          return studio.save();
+        },
+        (err) => {
+          let error = JSON.stringify(err);
+          error = JSON.parse(error);
+          if (error.code === "file_not_found") {
+            studio.update({
+              artworks: artworks,
+            });
+            return studio.save();
+          }else{
+            throw err;
+          }
+        }
+      )
       .then((res) => {
         console.log(res);
       })
@@ -46,7 +66,7 @@ function DeleteSampleArtwork(props) {
         src={close}
         alt="close"
         onClick={(e) => {
-          handleForm(e);
+          handleModal(e);
         }}
       />
 
@@ -79,7 +99,7 @@ function DeleteSampleArtwork(props) {
                       value="No"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleForm();
+                        handleModal();
                       }}
                     />
                     <input

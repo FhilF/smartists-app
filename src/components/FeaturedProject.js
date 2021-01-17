@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import classNames from "classnames";
 
 import placeHolder from "../assets/icons/placeholder-thumb.svg";
-import EditFeaturedProjectComponent from "./EditFeaturedProject";
+import UpdateFeaturedProjectComponent from "./UpdateFeaturedProject";
 import DeleteFeaturedProjectComponent from "./DeleteFeaturedProject";
 
 function FeaturedProject(props) {
@@ -14,7 +14,6 @@ function FeaturedProject(props) {
   const [activeAction, setActiveAction] = useState(false);
 
   useEffect(() => {
-    console.log(data);
   }, [data]);
 
   //requiredSkills
@@ -31,7 +30,7 @@ function FeaturedProject(props) {
 
   artistSkills.forEach((artistSkill, i) => {
     requiredSkills.forEach((requiredSkill, i) => {
-      if (artistSkill === requiredSkill.skill) {
+      if (artistSkill === requiredSkill.value) {
         newRequiredSkill = [...newRequiredSkill, requiredSkill];
       }
     });
@@ -47,7 +46,7 @@ function FeaturedProject(props) {
 
   persons.forEach((person, i) => {
     isLookingFor.forEach((isLookingFor, i) => {
-      if (person === isLookingFor.option) {
+      if (person === isLookingFor.value) {
         isLookingForModified = [...isLookingForModified, isLookingFor];
       }
     });
@@ -119,7 +118,7 @@ function FeaturedProject(props) {
           <div>
             <ul>
               {newRequiredSkill.map((requiredSkill, index) => {
-                return <li key={index}>{requiredSkill.skill}</li>;
+                return <li key={index}>{requiredSkill.value}</li>;
               })}
             </ul>
           </div>
@@ -134,7 +133,7 @@ function FeaturedProject(props) {
           <div>
             <ul>
               {newIsLookingFor.map((isLookingFor, index) => {
-                return <li key={index}>{isLookingFor.option}</li>;
+                return <li key={index}>{isLookingFor.value}</li>;
               })}
             </ul>
           </div>
@@ -147,7 +146,7 @@ function FeaturedProject(props) {
           )}
         >
           <div className="featured-project-actions">
-            <EditFeaturedProjectComponent
+            <UpdateFeaturedProjectComponent
               activeAction={activeAction}
               setActiveAction={setActiveAction}
               featuredProject={featuredProject}

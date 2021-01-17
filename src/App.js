@@ -5,52 +5,42 @@ import { connectOptions } from "./UserSession";
 import { configure, User, getConfig, Model } from "radiks";
 import "./App.css";
 
-import SmartistUserModel from "./models/SmartistUser";
+import SmartistsUserModel from "./models/SmartistsUser";
 
 import Content from "./layouts";
 
 const handleRadiksSignIn = async (
-  userData,
   setIsSigningIn,
-  setShowForm,
-  setSmartistUser
+  setSmartistsUser,
+  setIsFetchingUser
 ) => {
   setIsSigningIn(true);
   const query = { sortByDateStart: true };
   try {
     await User.createWithCurrentUser();
-    const smartistUser = await SmartistUserModel.fetchOwnList();
-    if (!smartistUser.length) {
-      setShowForm(true);
-    } else {
-      setSmartistUser(smartistUser);
-    }
-    // if (!smartistUser.length) {
-    //   const smartistUserModel = new SmartistUserModel({
-    //     name: null,
-    //     username: userData.username,
-    //   });
-    //   await smartistUserModel.save();
-    // }
+    const smartistsUser = await SmartistsUserModel.fetchOwnList();
+    setSmartistsUser(smartistsUser);
     setIsSigningIn(false);
+    setIsFetchingUser(false)
   } catch (error) {
     console.log(error);
+    setSmartistsUser([]);
     setIsSigningIn(false);
+    setIsFetchingUser(false)
   }
 };
 
-const handleUser = async (userSession, setShowForm, setSmartistUser) => {
+const handleUser = async (userSession, setSmartistsUser,setIsFetchingUser) => {
   if (userSession) {
     if (userSession.isUserSignedIn()) {
       try {
-        const smartistUser = await SmartistUserModel.fetchOwnList();
-        if (!smartistUser.length) {
-          setShowForm(true);
-        } else {
-          setSmartistUser(smartistUser);
-        }
+        const smartistsUser = await SmartistsUserModel.fetchOwnList();
+        setSmartistsUser(smartistsUser);
+        setIsFetchingUser(false)
       } catch (error) {
+        setSmartistsUser([]);
         console.log(error);
+        setIsFetchingUser(false)
       }
     }
   }
@@ -61,9 +51,9 @@ function App(props) {
   const [loading, setLoading] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [userSession, setUserSession] = useState();
-  const [smartistUser, setSmartistUser] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const { userSession: session } = useBlockstack();
+  const [smartistsUser, setSmartistsUser] = useState(null);
+  const [isfetchingUser, setIsFetchingUser] = useState(true);
+  const { userSession: session, signOut } = useBlockstack();
 
   useEffect(() => {
     setUserSession(session);
@@ -75,11 +65,10 @@ function App(props) {
       userSession,
     });
 
-    handleUser(userSession, setShowForm, setSmartistUser);
-  }, [userSession, setShowForm]);
+    handleUser(userSession, setSmartistsUser, setIsFetchingUser);
+  }, [userSession]);
 
-  useEffect(() => {
-  }, [isSigningIn]);
+  useEffect(() => {}, [isSigningIn]);
 
   useEffect(() => {
     setLoading(false);
@@ -92,12 +81,7 @@ function App(props) {
           connectOptions(({ userSession }) => {
             setUserSession(userSession);
             const userData = userSession.loadUserData();
-            handleRadiksSignIn(
-              userData,
-              setIsSigningIn,
-              setShowForm,
-              setSmartistUser
-            );
+            handleRadiksSignIn( setIsSigningIn, setSmartistsUser, setIsFetchingUser);
           })
         )}
       >
@@ -109,9 +93,10 @@ function App(props) {
           <Content
             userSession={userSession}
             handleUser={handleUser}
-            showForm={showForm}
-            setShowForm={setShowForm}
-            smartistUser={smartistUser}
+            smartistsUser={smartistsUser}
+            setSmartistsUser={setSmartistsUser}
+            signOut={signOut}
+            isfetchingUser={isfetchingUser}
           />
         )}
       </Connect>

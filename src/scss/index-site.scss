@@ -1,0 +1,71 @@
+@import "/variables/_core.scss";
+.snackbar {
+  overflow: hidden;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin: 30px;
+  margin-top: 10px;
+  z-index: 2000;
+
+  .snackbar-message {
+    margin-right: 15px;
+    font-family: $font-primary;
+  }
+
+  .snackbar-icon {
+    fill: currentColor;
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    font-size: inherit;
+    transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .snackbar-logo {
+    margin-right: 15px;
+    margin-right: 15px;
+    width: 1.4em;
+    height: 1.4em;
+  }
+
+  .snackbar-container {
+    display: flex;
+    padding: 15px;
+    box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2),
+      0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
+    align-items: center;
+    font-size: 16px;
+  }
+
+  .snackbar-close {
+    border-radius: 50%;
+    padding: 2px;
+    width: 1.2em;
+    height: 1.2em;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+.info-snackbar {
+  background-color: #2196f3;
+  color: #fff;
+}
+
+.success-snackbar {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.error-snackbar {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.warning-snackbar {
+  background-color: #ff9800;
+  color: #fff;
+}

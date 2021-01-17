@@ -3,7 +3,14 @@ import React, { useState, useEffect } from "react";
 function DeleteFeaturedProject(props) {
   const { activeAction, setActiveAction, featuredProject, userSession } = props;
   const [showForm, setShowForm] = useState(false);
-  const handleForm = () => {
+  const handleModal = () => {
+    var x = document.getElementsByTagName("BODY")[0];
+    if (window.getComputedStyle(x).overflow === "visible") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "visible";
+    }
+
     setActiveAction(!activeAction);
     setShowForm(!showForm);
   };
@@ -13,11 +20,20 @@ function DeleteFeaturedProject(props) {
     console.log(featuredProject);
     const featturedProjectImageForDelete = featuredProject.attrs.image;
     const result = /[^/]*$/.exec(featturedProjectImageForDelete)[0];
-    const file = "smartists/featuredArtwork/" + result;
+    const file = "smartists/featuredProject/" + result;
     userSession
       .deleteFile(file)
-      .then(() => {
+      .then((res) => {
         return featuredProject.destroy();
+      },
+      (err) => {
+        let error = JSON.stringify(err);
+        error = JSON.parse(error);
+        if (error.code === "file_not_found") {
+          return featuredProject.destroy();
+        }else{
+          throw err;
+        }
       })
       .then((res) => {
         console.log(res);
@@ -31,7 +47,7 @@ function DeleteFeaturedProject(props) {
       <button
         className="action-button"
         onClick={(e) => {
-          handleForm(e);
+          handleModal(e);
         }}
       >
         Delete
@@ -65,7 +81,7 @@ function DeleteFeaturedProject(props) {
                       value="No"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleForm();
+                        handleModal();
                       }}
                     />
                     <input

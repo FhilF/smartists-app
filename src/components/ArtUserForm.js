@@ -46,15 +46,14 @@ function ArtistForm(props) {
   return (
     <div id="artuser-form">
       <div>
-        <h4 className="component-header">Introduce yourself as an Art-user</h4>
+        <h5 className="component-header" style={{fontSize:"16px"}}>Introduce yourself as an <span className="color-secondary">Art-user</span></h5>
       </div>
       <div id="artuser-major-interest">
-        <p className="input-label mt-10">
+        <p className="input-label mt-10 text-gray-600">
           Your major interest to to join Smartists?
           <span className="required">*</span>
         </p>
         <div className="checkbox-group mt-10">
-          {" "}
           {majorInterest.map((interest, index) => {
             return (
               <div className="checkbox-root" key={index}>
@@ -68,7 +67,7 @@ function ArtistForm(props) {
                   }}
                   disabled={formLoading}
                 />
-                <label htmlFor={"majorInterest" + index}>{interest}</label>
+                <label htmlFor={"majorInterest" + index} className="p-paragraph text-gray-800">{interest}</label>
                 <br />
               </div>
             );
@@ -77,7 +76,7 @@ function ArtistForm(props) {
       </div>
 
       <div id="artuser-primary-interest">
-        <p className="input-label mt-10">
+        <p className="input-label mt-10 text-gray-600">
           What is/are you primary interest(s)?
           <span className="required">*</span>
         </p>
@@ -95,7 +94,7 @@ function ArtistForm(props) {
                   }}
                   disabled={formLoading}
                 />
-                <label htmlFor={"primaryInterest" + index}>{interest}</label>
+                <label htmlFor={"primaryInterest" + index} className="p-paragraph text-gray-800">{interest}</label>
                 <br />
               </div>
             );

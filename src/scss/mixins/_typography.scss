@@ -12,6 +12,7 @@
 
 .input-label {
   font-weight: 600;
+  font-size: 0.9em;
 }
 
 .paragraph-header {
@@ -32,14 +33,20 @@
 
 .component-header {
   font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   line-height: 1.5rem;
 }
 
-.page-header{
+.component-header-paragraph {
+  font-size: 0.9rem;
+  line-height: 1.2rem;
+  font-weight: 600;
+}
+
+.page-header {
   font-weight: 700;
   font-size: 2rem;
-  color:$secondary;
+  color: $secondary;
 }
 
 .p-header-text {
@@ -81,5 +88,5 @@
 }
 
 .text-gray-500 {
-  color: $gray-600;
+  color: $gray-500;
 }

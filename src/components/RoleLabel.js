@@ -32,9 +32,9 @@ function RoleLabel() {
           handleDialog();
         }}
       >
-        Role
+        <span className="input-label text-gray-600">Role</span>
         <HelpOutlineOutlinedIcon className="svg-icon svg-secondary" />
-        
+
         <span className="required">*</span>
       </div>
 

@@ -103,9 +103,9 @@ function Content(props) {
                 <SmartistsUserRoutes smartistsUser={smartistsUser} isfetchingUser={isfetchingUser} />
               </div>
             ) : (
-              <>
+              <div className="content-body">
                 <SuperUserRoutes setSmartistsUser={setSmartistsUser} />
-              </>
+              </div>
             ) : null}
           </>
         )}

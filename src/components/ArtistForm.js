@@ -45,12 +45,12 @@ function ArtistForm(props) {
   return (
     <div id="artist-form">
       <div>
-        <h4 className="component-header">
-          Describe yourself as an Author or Artist
-        </h4>
+        <h5 className="component-header" style={{ fontSize: "16px" }}>
+          Describe yourself as an <span className="color-secondary">Author</span> or <span className="color-secondary">Artist</span>
+        </h5>
       </div>
       <div id="artist-skills">
-        <p className="input-label mt-10">
+        <p className="input-label mt-10 text-gray-600">
           What is/are your skills?<span className="required">*</span>
         </p>
         <div className="checkbox-group mt-10">
@@ -67,7 +67,12 @@ function ArtistForm(props) {
                   }}
                   disabled={formLoading}
                 />
-                <label htmlFor={"skills" + index}>{skill}</label>
+                <label
+                  htmlFor={"skills" + index}
+                  className="p-paragraph text-gray-800"
+                >
+                  {skill}
+                </label>
                 <br />
               </div>
             );
@@ -76,7 +81,7 @@ function ArtistForm(props) {
       </div>
 
       <div id="artist-demand">
-        <p className="input-label mt-10">
+        <p className="input-label mt-10 text-gray-600">
           Are you open to work on demand?<span className="required">*</span>
         </p>
         <div className="mt-10">
@@ -90,7 +95,9 @@ function ArtistForm(props) {
             }}
             disabled={formLoading}
           />
-          <label htmlFor="workDemandYes">Yes</label>
+          <label htmlFor="workDemandYes" className="p-paragraph text-gray-800">
+            Yes
+          </label>
           <input
             type="radio"
             id="workDemandNo"
@@ -101,7 +108,9 @@ function ArtistForm(props) {
             }}
             disabled={formLoading}
           />
-          <label htmlFor="workDemandNo">No</label>
+          <label htmlFor="workDemandNo" className="p-paragraph text-gray-800">
+            No
+          </label>
         </div>
       </div>
     </div>

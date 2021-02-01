@@ -5,8 +5,8 @@ function Profile(props) {
   const {} = props;
 
   return (
-    <div className="pb-70">
-      meew
+    <div className="profile-root">
+      <div className="card p-20">Content</div>
 
     </div>
   );

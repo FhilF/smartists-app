@@ -2,12 +2,12 @@ import React, { useEffect } from "react";
 import classNames from "classnames";
 
 function StandardInput(props) {
-  const { className, placeholder, label, id, onChange, value, autoComplete,type, required, disabled } = props;
+  const { className, placeholder, label, id, onChange, value, autoComplete,type, required, disabled, style } = props;
   return (
     <div
-      className={classNames("standard-input-root base-input-root", className)}
+      className={classNames("standard-input-root base-input-root", className)} style={style}
     >
-      <label className="input-label">{label}{required ? <span className="required">*</span>: null}</label>
+      <label className="input-label text-gray-600">{label}{required ? <span className="required">*</span>: null}</label>
       <input
         className="standard-input base-input-text input-secondary mt-5"
         placeholder={placeholder}

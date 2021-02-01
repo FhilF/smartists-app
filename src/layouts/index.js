@@ -9,6 +9,8 @@ import "../scss/layout.scss";
 
 import NavProfileMenu from "../components/NavProfileMenu";
 
+import LandingPage from "../pages/LandingPage"
+
 function Content(props) {
   const { userSession, smartistsUser, setSmartistsUser, signOut,isfetchingUser } = props;
   const authenticated = userSession && userSession.isUserSignedIn();
@@ -95,7 +97,7 @@ function Content(props) {
       </div>
 
       <div className="content-body-root">
-        {!authenticated && <div>Regular User Home</div>}
+        {!authenticated && <LandingPage/>}
         {decentralizedID && (
           <>
             {!isfetchingUser ? smartistsUser.length !== 0 ? (

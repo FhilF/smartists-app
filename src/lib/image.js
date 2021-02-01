@@ -5,14 +5,31 @@ import { v4 as uuidv4 } from "uuid";
 
 const previewImageOptions = {
   maxSizeMB: 7,
-  maxWidthOrHeight: 1800,
+  maxWidthOrHeight: 1400,
   useWebWorker: true,
 };
 
 const uploadImageOptions = {
   maxSizeMB: 3,
-  maxWidthOrHeight: 1920,
+  maxWidthOrHeight: 1400,
   useWebWorker: true,
+};
+
+
+export const handleCompressPreviewImage = async (file) => {
+  try {
+    const compressedFile = await imageCompression(file, previewImageOptions);
+    const tempUrls = window.URL.createObjectURL(compressedFile);
+    return {
+      result: "success",
+      data: { rawFile: file, compressedFile: tempUrls },
+    };
+  } catch (error) {
+    return {
+      result: "error",
+      data: error,
+    };
+  }
 };
 
 export const handleMediaInputChange = async (e) => {

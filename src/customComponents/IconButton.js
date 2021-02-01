@@ -8,9 +8,9 @@ function IconButton(props) {
 
   function handleButtonSize(size) {
     if (size === "small") {
-      return "btn-sm";
+      return "btn-sm-svg";
     } else {
-      return "btn-md";
+      return "btn-md-svg";
     }
   }
 
@@ -22,7 +22,7 @@ function IconButton(props) {
       };
     } else if (color === "secondary") {
         return {
-            btnColor: "btn-icon-secondary",
+            btnColor: "btn-svg-secondary",
             rippleColor: "rgba(0, 0, 0, 0.14)",
           };
     } else {

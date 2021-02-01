@@ -27,6 +27,8 @@ function handleButton(size, color, variant) {
 
   if (size === "small") {
     x.push("btn-sm");
+  } else if (size === "large") {
+    x.push("btn-lg");
   } else {
     x.push("btn-md");
   }
@@ -44,21 +46,56 @@ function TextFunctionButton(props) {
     label,
     type,
     variant,
+    disabled,
+    link,
   } = props;
+  const history = useHistory();
 
   return (
-    <button
-      className={classNames(
-        "btn btn-ripple",
-        className,
-        ...handleButton(size, color, variant)
+    <>
+      {link ? (
+        <a
+          className={classNames(
+            "btn btn-ripple",
+            className,
+            ...handleButton(size, color, variant),
+            disabled ? "btn-disabled" : null
+          )}
+          type={type ? type : "button"}
+          disabled={disabled}
+          href={link}
+          onClick={
+            disabled
+              ? (e) => {
+                  e.preventDefault();
+                }
+              : onClick
+              ? onClick
+              : (e) => {
+                  e.preventDefault();
+                  history.push(link);
+                }
+          }
+        >
+          {children ? children : label}
+          {!disabled && <Ripple color="rgba(0, 0, 0, 0.14)" />}
+        </a>
+      ) : (
+        <button
+          className={classNames(
+            "btn btn-ripple",
+            className,
+            ...handleButton(size, color, variant)
+          )}
+          type={type ? type : "button"}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {children ? children : label}
+          {!disabled && <Ripple color="rgba(0, 0, 0, 0.14)" />}
+        </button>
       )}
-      type={type ? type : "button"}
-      onClick={onClick}
-    >
-      {children ? children : label}
-      <Ripple color="rgba(0, 0, 0, 0.14)" />
-    </button>
+    </>
   );
 }
 

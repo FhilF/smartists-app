@@ -51,6 +51,11 @@
   &:active:hover:not([disabled]) {
     background-color: $secondary-dark;
   }
+
+  &:disabled {
+    color: $gray-600;
+    background: $gray-300;
+  }
 }
 
 .btn-contained {
@@ -119,6 +124,11 @@
   border: none;
 }
 
+.btn-lg {
+  padding: 14px 24px;
+  font-size: 1rem;
+}
+
 .btn-md {
   padding: 8px 16px;
   font-size: 0.9rem;
@@ -127,4 +137,22 @@
 .btn-sm {
   padding: 5px;
   font-size: 1.125rem;
+}
+
+.btn-disabled {
+  cursor: default;
+}
+
+.btn-md-svg {
+  padding: 4px;
+  font-size: 1.5rem;
+}
+
+.btn-sm-svg{
+  padding: 4px;
+  font-size: 0.9rem;
+}
+
+.btn-svg-secondary{
+  color: $secondary;
 }

@@ -44,9 +44,9 @@ function ArtistForm(props) {
   ];
 
   return (
-    <div id="artuser-form">
+    <div id="artuser-form art-form-item">
       <div>
-        <h5 className="component-header" style={{fontSize:"16px"}}>Introduce yourself as an <span className="color-secondary">Art-user</span></h5>
+        <h5 className="component-header" style={{fontSize:"16px"}}>Introduce yourself as an <span className="text-secondary">Art-user</span></h5>
       </div>
       <div id="artuser-major-interest">
         <p className="input-label mt-10 text-gray-600">

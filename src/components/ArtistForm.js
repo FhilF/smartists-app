@@ -43,10 +43,10 @@ function ArtistForm(props) {
     "Digital Editing",
   ];
   return (
-    <div id="artist-form">
+    <div id="artist-form art-form-item">
       <div>
         <h5 className="component-header" style={{ fontSize: "16px" }}>
-          Describe yourself as an <span className="color-secondary">Author</span> or <span className="color-secondary">Artist</span>
+          Describe yourself as an <span className="text-secondary">Author</span> or <span className="text-secondary">Artist</span>
         </h5>
       </div>
       <div id="artist-skills">

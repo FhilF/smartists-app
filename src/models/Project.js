@@ -24,11 +24,11 @@ export default class Project extends Model {
       type: String,
       decrypted: true,
     },
-    isLookingFor: {
+    extraUsers: {
       type: String,
       decrypted: true,
     },
-    image: {
+    fileName: {
       type: String,
       decrypted: true,
     },

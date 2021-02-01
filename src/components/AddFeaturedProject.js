@@ -1,6 +1,7 @@
+  
 import React, { useState, useEffect } from "react";
 import { handleMediaInputChange, handleCompress } from "../lib/image";
-import { isEmpty } from "../lib/data";
+import { isEmptyStr } from "../lib/data";
 import plusSign from "../assets/icons/plus.svg";
 
 import { uploadFile } from "../lib/image";
@@ -104,7 +105,7 @@ function AddFeaturedProject(props) {
   const modifyIsLookingFor = (isLookingForOtherOptions) => {
     let newLookingFor = [];
     isLookingForOtherOptions.forEach((lookingFor, index) => {
-      if (isEmpty(lookingFor)) {
+      if (isEmptyStr(lookingFor)) {
         newLookingFor = [
           ...newLookingFor,
           { value: lookingFor, status: false },
@@ -118,7 +119,7 @@ function AddFeaturedProject(props) {
   const modifyIsLookingForOther = (isLookingForOtherOptions) => {
     let newLookingFor = [];
     isLookingForOtherOptions.forEach((lookingFor, index) => {
-      if (isEmpty(lookingFor.value)) {
+      if (isEmptyStr(lookingFor.value)) {
         newLookingFor = [
           ...newLookingFor,
           lookingFor
@@ -134,9 +135,9 @@ function AddFeaturedProject(props) {
     let newFeaturedProject;
     newFeaturedProject = { ...featuredProject };
     if (
-      !isEmpty(newFeaturedProject.title) ||
-      !isEmpty(newFeaturedProject.tagline) ||
-      !isEmpty(newFeaturedProject.description) ||
+      !isEmptyStr(newFeaturedProject.title) ||
+      !isEmptyStr(newFeaturedProject.tagline) ||
+      !isEmptyStr(newFeaturedProject.description) ||
       !newFeaturedProject.image ||
       newFeaturedProject.requiredSkills.length === 0
     ) {

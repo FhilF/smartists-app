@@ -5,13 +5,11 @@ import Dialog from "../../customComponents/Dialog";
 import ButtonDropdown from "../../customComponents/ButtonDropdown";
 import { useAlert } from "react-alert";
 import { handleMediaInputChange, handleCompress } from "../../lib/image";
-import { isEmpty } from "../../lib/data";
+import { isEmptyStr } from "../../lib/data";
 
-import FormImage from "./FormImage";
-import FormVideo from "./FormVideo";
 
 function AddPortfolio() {
-  const [handleDialog, setHandleDialog] = useState(true);
+  const [handleDialog, setHandleDialog] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
@@ -102,7 +100,7 @@ function AddPortfolio() {
                     </ButtonDropdown>
                   </div>
                   <div>
-                    <FormImage
+                    {/* <FormImage
                       setIsCompressing={setIsCompressing}
                       handleMediaInputChange={handleMediaInputChange}
                       setTempMediaUrls={setTempMediaUrls}
@@ -122,7 +120,7 @@ function AddPortfolio() {
                       porfolio={porfolio}
                       formLoading={formLoading}
                       setFormLoading={setFormLoading}
-                    />
+                    /> */}
                   </div>
                 </div>
               </div>

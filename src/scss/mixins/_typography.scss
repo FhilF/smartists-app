@@ -51,18 +51,30 @@
 
 .p-header-text {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.5rem;
 }
 
 .p-text {
   font-weight: 600;
   font-size: 1rem;
-  line-height: 1.5rem;
+  line-height: 1.4rem;
+}
+
+.p-text-bold {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.4rem;
 }
 
 .p-paragraph {
   font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.4rem;
+}
+
+.p-paragraph-bold {
+  font-weight: 700;
   font-size: 0.9rem;
   line-height: 1.4rem;
 }
@@ -73,7 +85,7 @@
   line-height: 1rem;
 }
 
-.color-secondary {
+.text-secondary {
   color: $secondary;
 }
 

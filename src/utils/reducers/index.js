@@ -1,6 +1,10 @@
 import { combineReducers } from "redux";
-import smartistsUserReducer from "./smartistsUserReducer";
+import smartistsMemberReducer from "./smartistsMemberReducer";
+import portfolioReducer from "./portfolioReducer";
+import projectReducer from "./projectReducer";
 
 export default combineReducers({
-  smartistsUserReducer: smartistsUserReducer,
+  smartistsMemberReducer: smartistsMemberReducer,
+  portfolioReducer: portfolioReducer,
+  projectReducer: projectReducer
 });

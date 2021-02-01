@@ -1,11 +1,10 @@
-let axios;_f98‍.x([["aggregateSmartistsUser",()=>aggregateSmartistsUser]]);_f98‍.w("axios",[["default",["axios"],function(v){axios=v}]]);
 const { COLLECTION } = require("radiks-server/app/lib/constants");
 const sortBy = require("lodash/sortBy");
 
-       const aggregateSmartistsUser = async (radiksData, query) => {
+export const aggregateSmartistsMember = async (radiksData, query) => {
   const match = {
     $match: {
-      radiksType: "SmartistUser",
+      radiksType: "SmartistsUser",
     },
   };
 
@@ -21,8 +20,8 @@ const sortBy = require("lodash/sortBy");
     };
   }
 
-  if (query.smartistsUser) {
-    match.$match.username = query.smartistsUser;
+  if (query.smartistsMember) {
+    match.$match.username = query.smartistsMember;
   }
 
   const sort = {
@@ -33,35 +32,34 @@ const sortBy = require("lodash/sortBy");
     $limit: query.limit || 10,
   };
 
-  const entryLookup = {
+  const studioLookup = {
     $lookup: {
       from: COLLECTION,
-      let: { durran_User: "$username" },
+      let: { smartists_Member: "$username", is_Artist: "$isArtist.boolean" },
       pipeline: [
         {
           $match: {
             $expr: {
               $and: [
-                { $eq: ["Entry", "$radiksType"] },
-                { $eq: ["$$durran_User", "$createdBy"] },
+                { $eq: ["$$is_Artist", true] },
+                { $eq: ["Studio", "$radiksType"] },
+                { $eq: ["$$smartists_Member", "$username"] },
               ],
             },
           },
         },
-        {
-          $lookup: {
-            from: COLLECTION,
-            localField: "dareId",
-            foreignField: "_id",
-            as: "dare",
-          },
-        },
       ],
-      as: "entries",
+      as: "studio",
     },
   };
 
-  const pipeline = [match, sort];
+  let pipeline = [];
+
+  if (query.studioLookup) {
+    pipeline = [match, sort, studioLookup];
+  } else {
+    pipeline = [match, sort];
+  }
 
   const user = await radiksData.aggregate(pipeline).toArray();
 
@@ -69,5 +67,5 @@ const sortBy = require("lodash/sortBy");
 };
 
 module.exports = {
-  aggregateSmartistsUser,
+  aggregateSmartistsMember,
 };

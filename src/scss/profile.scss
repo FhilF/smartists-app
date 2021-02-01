@@ -4,6 +4,7 @@
 .content-root {
   display: flex;
   margin-top: 12px;
+  margin-bottom: 20px;
   .main {
     width: 800px;
     // .content {
@@ -14,44 +15,36 @@
   }
 
   .left-nav {
-    width: 312px;
-    margin-right: 12px;
+    width: 280px;
     .left-nav-content {
-      .profile-root {
+      .profile-nav-root {
+        padding-left: 20px;
+        padding-right: 20px;
+        box-sizing: border-box;
         .profile-image-root {
           position: relative;
-
-          .profile-banner {
-            background: maroon;
-            width: 100%;
-            height: 120px;
-          }
+          display: flex;
+          align-self: center;
+          align-items: center;
 
           .profile-display-picture {
             border-radius: 50%;
             border-color: gray;
             border: 2px solid #dedede;
-            width: 100px;
-            height: 100px;
-            cursor: pointer;
+            width: 60px;
+            height: 60px;
             background-size: cover;
-            position: absolute;
-            top: 50px;
-            left: 20px;
-            right: 0;
-            bottom: 0;
           }
         }
 
         .profile-information {
           .profile-name {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 1em;
             color: $secondary;
           }
           .profile-username {
-            font-size: 14px;
-            font-weight: 400;
+            font-size: 0.9em;
+            font-weight: 600;
           }
         }
       }
@@ -61,16 +54,18 @@
         padding: 0;
 
         .profile-navigation-item {
-          padding: 12px 20px;
+          padding: 12px 12px;
           font-size: 16px;
           font-weight: 600;
           display: flex;
           align-content: center;
           cursor: pointer;
           text-decoration: none;
+          color: $gray-500;
+          align-items: center;
 
           &:hover {
-            background: $primary-dark;
+            background: #f3eee5;
           }
 
           &:focus {
@@ -78,9 +73,9 @@
           }
 
           .profile-navigation-item-icon-root {
-            color: #e6be7a;
+            color: $gray-600;
             display: inline-flex;
-            min-width: 56px;
+            min-width: 40px;
             flex-shrink: 0;
 
             .profile-navigation-item-icon {
@@ -223,49 +218,6 @@
             background-position: 0 50%;
           }
         }
-      }
-    }
-
-    .input-container {
-      display: grid;
-      grid-gap: 12px;
-      grid-template-columns: 0.4fr 1fr;
-      .upload-container-root {
-        .upload-container-extra{
-          display: flex;
-          height: 100%;
-          box-sizing: border-box;
-          .upload-container {
-            display: flex;
-            height: 100%;
-            box-sizing: border-box;
-            width: 100%;
-            input {
-              display: none;
-            }
-  
-            label {
-              display: flex;
-              width: 100%;
-              cursor: pointer;
-              border: #929090 1px dashed;
-              img {
-                width: 100%;
-                padding: 70px;
-                box-sizing: border-box;
-              }
-  
-              
-            }
-          }
-        }
-        
-      }
-
-      .uploaded-image-container {
-        width: 100%;
-        background-size: cover;
-        background-position: 50%;
       }
     }
   }

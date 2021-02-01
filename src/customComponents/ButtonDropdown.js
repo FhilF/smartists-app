@@ -17,7 +17,7 @@ function ButtonDropdown(props) {
     <div
       className={classNames("standard-select-root base-select-root", className)}
     >
-      <label className="select-label input-label">
+      <label className="select-label input-label text-gray-600">
         {label ? (
           <>
             {label}

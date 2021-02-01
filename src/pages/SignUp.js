@@ -18,6 +18,7 @@ import StandardTextArea from "../customComponents/StandardTextArea";
 import ButtonDropdown from "../customComponents/ButtonDropdown";
 
 import Button from "../customComponents/Button";
+import LoadingBar from "../components/LoadingBar";
 
 import Loader from "react-loader-spinner";
 import { useAlert } from "react-alert";
@@ -86,7 +87,7 @@ function SignUp(props) {
   const [file, setFile] = useState(null);
   const [tempImgUrls, setTempImgUrls] = useState();
 
-  useEffect(() => {}, [profile]);
+  useEffect(() => {}, []);
 
   useEffect(() => {
     return () => {
@@ -119,7 +120,7 @@ function SignUp(props) {
   //   useEffect(() => {
   //   }, [formName]);
 
-  function isEmpty(str) {
+  function isEmptyStr(str) {
     return !str || 0 === str.length || !str.trim();
   }
 
@@ -129,7 +130,6 @@ function SignUp(props) {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
     setFormLoading(true);
     const userData = userSession.loadUserData();
 
@@ -205,7 +205,6 @@ function SignUp(props) {
           alert.error(
             "There was a problem submitting the form please try again later!"
           );
-          setFormLoading(false);
         });
     } else {
       const smartistModel = new SmartistsUserModel({
@@ -228,8 +227,6 @@ function SignUp(props) {
           setFormLoading(false);
         });
     }
-
-    setFormLoading(false);
   };
 
   const handleMediaInputChange = (e) => {
@@ -327,6 +324,7 @@ function SignUp(props) {
     }
   };
 
+
   return (
     <div className="sign-up-root ">
       <div className="sign-up card p-20 bb pb-40">
@@ -342,65 +340,204 @@ function SignUp(props) {
               e.preventDefault();
               handleSubmit();
             }}
+            className="form"
           >
             <div className="mt-20">
-              <div className="input-label">
-                <RoleLabel />
-              </div>
-              <div className="col-lg-6">
-                <ButtonDropdown
-                  label={false}
-                  id="role"
-                  value={formRole}
-                  onChange={(e) => {
-                    handleDropDown(e);
+              <div className="profile-image-root col-lg-8">
+                <input
+                  accept="image/*,video/*"
+                  style={{ display: "none" }}
+                  id="raised-button-file"
+                  type="file"
+                  onChange={async (e) => {
+                    await handleMediaInputChange(e);
                   }}
-                  required
+                  className="input-upload"
                   disabled={formLoading}
-                >
-                  <option value="">Choose a role</option>
-                  <option value="Artist">Artist</option>
-                  <option value="Art-user">Art-user</option>
-                  <option value="Artist & Art-user">Artist & Art-user</option>
-                </ButtonDropdown>
+                />
+                <label htmlFor="raised-button-file">
+                  <div style={{ position: "relative" }}>
+                    <div
+                      style={{
+                        backgroundImage: `url(${
+                          tempImgUrls ? tempImgUrls : placeHolder
+                        })`,
+                      }}
+                      className="profile-display-picture"
+                    ></div>
+                  </div>
+                  {/* <img
+              src={tempImgUrls ? tempImgUrls : placeHolder}
+              alt="..."
+              style={{
+                borderRadius: "50%",
+                borderColor: "gray",
+                border: "3px solid ",
+                width: "100px",
+                height: "100px",
+                cursor: "pointer",
+              }}
+            /> */}
+                </label>
               </div>
+              <div className="col-lg-8">
+                <StandardInput
+                  className="mt-10"
+                  label="Name"
+                  id="name"
+                  value={profile.name ? profile.name : ""}
+                  onChange={(e) => {
+                    if (isEmptyStr(e.target.value)) {
+                      setProfile({ ...profile, name: null });
+                      return false;
+                    }
+                    setProfile({ ...profile, name: e.target.value });
+                  }}
+                  autoComplete="off"
+                  disabled={formLoading}
+                />
+                <StandardInput
+                  className="mt-10"
+                  label="Website URL"
+                  id="website-url"
+                  value={profile.websiteUrl ? profile.websiteUrl : ""}
+                  onChange={(e) => {
+                    if (isEmptyStr(e.target.value)) {
+                      setProfile({ ...profile, websiteUrl: null });
+                      return false;
+                    }
+                    setProfile({ ...profile, websiteUrl: e.target.value });
+                  }}
+                  autoComplete="off"
+                  disabled={formLoading}
+                />
 
-              <div className="mt-20">
-                <div>
-                  {profile.isArtist.boolean === true ? (
-                    <ArtistForm
-                      profile={profile}
-                      setProfile={setProfile}
-                      formLoading={formLoading}
-                    />
-                  ) : null}
+                <StandardInput
+                  className="mt-10"
+                  label="Email"
+                  id="email"
+                  type="email"
+                  rows={4}
+                  value={profile.email ? profile.email : ""}
+                  onChange={(e) => {
+                    if (isEmptyStr(e.target.value)) {
+                      setProfile({ ...profile, email: null });
+                      return false;
+                    }
+                    setProfile({ ...profile, email: e.target.value });
+                  }}
+                  autoComplete="off"
+                  disabled={formLoading}
+                />
+              </div>
+              <div className="mt-10">
+                <div className="input-label">
+                  <RoleLabel />
+                </div>
+                <div className="col-lg-6">
+                  <ButtonDropdown
+                    label={false}
+                    id="role"
+                    value={formRole}
+                    onChange={(e) => {
+                      handleDropDown(e);
+                    }}
+                    required
+                    disabled={formLoading}
+                  >
+                    <option value="">Choose a role</option>
+                    <option value="Artist">Artist</option>
+                    <option value="Art-user">Art-user</option>
+                    <option value="Artist & Art-user">Artist & Art-user</option>
+                  </ButtonDropdown>
+                </div>
 
-                  {profile.isArtist.boolean && profile.isArtUser.boolean && (
-                    <div className="mt-30"></div>
-                  )}
+                <div
+                  className={
+                    profile.isArtist.boolean === true ||
+                    profile.isArtUser.boolean === true
+                      ? "mt-20"
+                      : null
+                  }
+                >
+                  <div className="art-form">
+                    {profile.isArtist.boolean === true ? (
+                      <ArtistForm
+                        profile={profile}
+                        setProfile={setProfile}
+                        formLoading={formLoading}
+                      />
+                    ) : null}
 
-                  {profile.isArtUser.boolean === true ? (
-                    <ArtUserForm
-                      profile={profile}
-                      setProfile={setProfile}
-                      formLoading={formLoading}
-                    />
-                  ) : null}
+                    {profile.isArtUser.boolean === true ? (
+                      <ArtUserForm
+                        profile={profile}
+                        setProfile={setProfile}
+                        formLoading={formLoading}
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="action-container mt-40">
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  // handleModal();
+              <StandardTextArea
+                className="col-lg-8 mt-10"
+                label="Describe yourself"
+                id="description"
+                rows={4}
+                value={profile.description ? profile.description : ""}
+                onChange={(e) => {
+                  if (isEmptyStr(e.target.value)) {
+                    setProfile({ ...profile, description: null });
+                    return false;
+                  }
+                  setProfile({ ...profile, description: e.target.value });
                 }}
-              >
-                Cancel
-              </Button>
-              <Button variant="contained" color="secondary" type="submit">
-                Submit
-              </Button>
+                disabled={formLoading}
+              />
+              <div className="mt-30">
+                <p style={{ fontWeight: "600", fontSize: "12px" }}>
+                  We value Confidentiality and Intellectual Property!
+                </p>
+                <p style={{ fontSize: "12px" }} className="text-gray-500">
+                  Your communications on Smartists are private and secure thanks
+                  to blockchain technology, but they are also legally protected
+                  once you sign the following Confidentiality Agreement.
+                </p>
+              </div>
+              <TermsAndConfidentialityAgreements
+                agreedToTerms={agreedToTerms}
+                setAgreedToTerms={setAgreedToTerms}
+                disabled={formLoading}
+              />
+              <div className="action-container mt-40">
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // handleModal();
+                  }}
+                >
+                  Cancel
+                </Button>{" "}
+                <div style={{ position: "relative" }}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    type="submit"
+                    disabled={formLoading}
+                  >
+                    {formLoading ? <>Submitting...</> : <>Submit</>}
+                  </Button>
+                  {formLoading && (
+                    <Loader
+                      className="btn-loader"
+                      type="Oval"
+                      color="#00BFFF"
+                      height={25}
+                      width={25}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </form>
         </div>

@@ -1,0 +1,43 @@
+.upload-container-media {
+  display: flex;
+  height: 150px;
+  box-sizing: border-box;
+  width: 100%;
+  input {
+    display: none;
+  }
+
+  label {
+    display: flex;
+    width: 100%;
+    cursor: pointer;
+    border: #929090 1px dashed;
+    img {
+      width: 100%;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+  }
+
+  .uploaded-image-container {
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+    border-radius: 16px;
+    background-position: 50%;
+  }
+}
+
+.featured-project-item {
+  .media-container {
+    .featured-project {
+      height: 180px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .featured-project-image {
+      background-size: cover;
+      background-position: 0 50%;
+    }
+  }
+}

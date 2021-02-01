@@ -1,174 +1,94 @@
-.svg-button {
-  cursor: pointer;
-}
-.edit-image-container {
-  position: relative;
+.studio-root {
+  .user-featured-portfolio-container {
+    display: grid;
+    grid-gap: 12px;
+    grid-template-columns: 1fr 1fr 1fr;
 
-  .edit-image-action-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
+    .studio-featured-portfolio-item {
+      width: 100%;
+      box-sizing: border-box;
+      .media-container {
+        .studio-featured-media {
+          height: 140px;
+          width: 100%;
+          box-sizing: border-box;
+          border: solid 1px gray;
+        }
 
-    .edit-image-actions {
-      justify-content: flex-end;
-      display: flex;
+        .studio-featured-image {
+          background-size: cover;
+          background-position: 0 50%;
+        }
 
-      div {
-        padding: 5px;
-        .delete-image-action-button {
-          display: block;
-          width: 15px;
-          height: 15px;
-          &:hover {
-            width: 18px;
-            height: 18px;
+        .studio-featured-video {
+          height: 140px;
+          width: 100%;
+          &:focus {
+            outline: 0px;
+          }
+        }
+
+        .studio-featured-audio {
+          height: 140px;
+          width: 100%;
+          .audio-image-placeholder {
+            background-size: contain;
+            height: 100%;
+            width: 100%;
+            background-position: 0 0%;
+          }
+          .portfolio-audio {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+
+            .audio-container {
+              height: 100%;
+              width: 100%;
+              display: flex;
+              align-items: flex-end;
+              box-sizing: border-box;
+              padding-left: 5px;
+              padding-right: 5px;
+              padding-bottom: 5px;
+              .audio-player {
+                height: 30px;
+                width: 100%;
+                outline: 0px;
+                &:focus {
+                  outline: 0px;
+                }
+              }
+            }
           }
         }
       }
-    }
-
-    // .edit-image-actions > div .action-button{
-    //   display: none;
-    // }
-  }
-}
-
-.featured-project-container {
-  position: relative;
-
-  .featured-project-action-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-
-    .featured-project-actions {
-      justify-content: flex-end;
-      display: flex;
-    }
-
-    .featured-project-actions > div .action-button {
-      display: none;
-    }
-
-    &:hover {
-      .featured-project-actions > div .action-button {
-        display: block;
-      }
-    }
-
-    &.active {
-      .featured-project-actions > div .action-button {
-        display: none;
-      }
-    }
-  }
-}
-
-.banner-container {
-  position: relative;
-
-  .banner {
-    height: 300px;
-  }
-
-  .banner-action-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-
-    .banner-actions {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px;
-    }
-
-    .banner-actions > div .action-button {
-      display: none;
-      width: 15px;
-      height: 15px;
-      &:hover {
-        width: 18px;
-        height: 18px;
-      }
-    }
-
-    &:hover {
-      background: rgba(116, 113, 99, 0.4);
-      .banner-actions > div .action-button {
-        display: block;
-      }
-    }
-
-    &.active {
-      .banner-actions > div .action-button {
-        display: none;
-      }
-    }
-  }
-}
-
-.sample-artwork-container {
-  position: relative;
-
-  .sample-artwork-action-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-
-    .sample-artwork-actions {
-      justify-content: flex-end;
-      display: flex;
-
-      div .action-button {
-        height: 15px;
-        width: 15px;
-        &:hover {
-          width: 18px;
-          height: 18px;
+      .user-featured-portfolio-item-image-root {
+        .user-featured-portfolio-item-image {
+          height: 140px;
+          background-size: cover;
+          background-position: 0 50%;
         }
       }
     }
-
-    .sample-artwork-actions > div .action-button {
-      display: none;
-    }
-
-    &:hover {
-      background: rgba(116, 113, 99, 0.4);
-      .sample-artwork-actions > div .action-button {
-        display: block;
-      }
-    }
-
-    &.active {
-      .sample-artwork-actions > div .action-button {
-        display: none;
-      }
-    }
   }
 }
 
-.terms-and-agreements-root {
-  display: inline-flex;
-  align-items: center;
 
-  .terms-and-agreements-text{
-    font-size: 14px;
+.featured-project-item {
+  .media-container {
+    .featured-project {
+      height: 180px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .featured-project-image {
+      background-size: cover;
+      background-position: 0 50%;
+    }
   }
 }

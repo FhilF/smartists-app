@@ -20,5 +20,7 @@ export default class Portfolio extends Model {
       type: String,
       decrypted: true,
     },
+    
   };
+
 }

@@ -18,7 +18,7 @@ function TermsAndConfidentialityAgreements(props) {
 
   return (
     <div className="mt-10">
-      <div className="terms-and-agreements-root">
+      <div className="terms-and-agreements-root" style={{display:"flex", alignItems:"center"}}>
         <input
           type="checkbox"
           id="term&agreements"
@@ -29,7 +29,7 @@ function TermsAndConfidentialityAgreements(props) {
           value={agreedToTerms}
           disabled={disabled}
         />
-        <p className="ml-5 terms-and-agreements-text">
+        <p className="p-paragraph ml-10">
           I agree to the{" "}
           <span
             className="text-button"

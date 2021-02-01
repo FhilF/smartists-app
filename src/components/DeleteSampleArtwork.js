@@ -5,6 +5,7 @@ import close from "../assets/icons/close.svg";
 
 import { useBlockstack } from "react-blockstack";
 
+
 function DeleteSampleArtwork(props) {
   const { activeAction, setActiveAction, studio, index } = props;
   const { userSession } = useBlockstack();

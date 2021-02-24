@@ -3,7 +3,6 @@ import plusSign from "../../assets/icons/plus.svg";
 import { handleCompress, handleCompressPreviewImage } from "../../lib/image";
 import { getFileUrl } from "../../lib/media";
 import { Profile } from "blockstack";
-import { useAlert } from "react-alert";
 import StandardInput from "../../customComponents/StandardInput";
 import StandardTextArea from "../../customComponents/StandardTextArea";
 import { isEmptyStr } from "../../lib/data";
@@ -43,6 +42,7 @@ function Form(props) {
     setOther,
     dynamicInput,
     setDynamicInput,
+    alert
   } = props;
 
   const handleRequiredSkill = (e, i) => {
@@ -108,49 +108,50 @@ function Form(props) {
     }
   };
 
+
   return (
-    <div>
-      <div className="upload-container-root">
-        <div className="upload-container-media col-12 col-md-6 col-lg-4">
-          {tempMediaUrls ? (
-            <>
-              <div
-                className="uploaded-image-container"
-                style={{
-                  backgroundImage: `url(${tempMediaUrls})`,
-                  borderRadius: "16px",
-                }}
-              ></div>
-            </>
-          ) : (
-            <>
-              <input
-                accept="image/*"
-                style={{ display: "none" }}
-                id="raised-button-file"
-                type="file"
-                onChange={async (e) => {
-                  setIsCompressing(true);
-                  handleMediaInputChange(e);
-                }}
-              />
-              <label htmlFor="raised-button-file">
-                <img src={plusSign} alt="upload" />
-              </label>
-            </>
-          )}
+    <div className="mt-4">
+      <div className="w-full">
+        <div className="w-full lg:w-3/4 h-80">
+          <div className="h-full w-full">
+            {tempMediaUrls ? (
+              <>
+                <div
+                  className="h-full w-full bg-cover bg-center border-gray-400 border border-solid"
+                  style={{
+                    backgroundImage: `url(${tempMediaUrls})`,
+                    borderRadius: "16px",
+                  }}
+                ></div>
+              </>
+            ) : (
+              <div className="h-full w-full line border-dashed border-2 border-gray-300">
+                <input
+                  className="input-upload"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  id="raised-button-file"
+                  type="file"
+                  onChange={async (e) => {
+                    setIsCompressing(true);
+                    handleMediaInputChange(e);
+                  }}
+                  disabled={formLoading}
+                />
+                <label htmlFor="raised-button-file">
+                  <img
+                    src={plusSign}
+                    alt="upload"
+                    className="h-full w-full p-28 cursor-pointer"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div className="col-12 col-lg-8">
+        <div className="lg:w-3/4 bb mt-4">
           <StandardInput
-            className="mt-20"
+            className=""
             label="Title"
             id="image-title"
             value={project.title ? project.title : ""}
@@ -167,7 +168,7 @@ function Form(props) {
           />
 
           <StandardInput
-            className="mt-20"
+            className="mt-2"
             label="Tagline"
             id="image-title"
             value={project.tagline ? project.tagline : ""}
@@ -184,7 +185,7 @@ function Form(props) {
           />
 
           <StandardTextArea
-            className="mt-20"
+            className="mt-2"
             label="Description"
             id="image-description"
             rows={4}
@@ -199,122 +200,126 @@ function Form(props) {
             disabled={formLoading}
             required
           />
-        </div>
 
-        <div id="artist-skills" className="mt-20">
-          <p className="input-label text-gray-600">
-            For this project I am looking for creative partners or collaborators
-            with the following skills:<span className="required">*</span>
-          </p>
-          {artistSkills.map((skill, index) => {
-            return (
-              <div key={index}>
-                <input
-                  type="checkbox"
-                  id={"skills-" + index}
-                  name="artistSkills"
-                  value={skill.value}
-                  checked={skill.isLookingFor}
-                  onChange={(e) => {
-                    handleRequiredSkill(e, index);
-                  }}
-                />
-                <label
-                  htmlFor={"skills" + index}
-                  className="p-paragraph text-gray-800"
-                >
-                  {skill.value}
-                </label>
-                <br />
-              </div>
-            );
-          })}
-        </div>
+          <div id="artist-skills" className="mt-2">
+            <p className="input-label text-gray-600">
+              For this project I am looking for creative partners or
+              collaborators with the following skills:
+              <span className="required">*</span>
+            </p>
+            <div className="mt-2">
+              {artistSkills.map((skill, index) => {
+                return (
+                  <div key={index} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={"skills-" + index}
+                      name="artistSkills"
+                      value={skill.value}
+                      checked={skill.isLookingFor}
+                      disabled={formLoading}
+                      onChange={(e) => {
+                        handleRequiredSkill(e, index);
+                      }}
+                    />
+                    <label
+                      htmlFor={"skills" + index}
+                      className="text-gray-800 text-sm font-semibold ml-2"
+                    >
+                      {skill.value}
+                    </label>
+                    <br />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-        <div id="audience-advice">
-          <br />
-          <p className="input-label text-gray-600">
-            For this project I am open to listen to the audience's advice...<span className="required">*</span>
-          </p>
-          <input
-            type="radio"
-            id="audienceAdviceYes"
-            name="audienceAdviceOption"
-            value="Yes"
-            onChange={(e) => {
-              handleIsListeningForAdvice(e);
-            }}
-          />
-          <label
-            htmlFor="audienceAdviceYes"
-            className="p-paragraph text-gray-800"
-          >
-            Yes
-          </label>
-          <br />
-          <input
-            defaultChecked
-            type="radio"
-            id="audienceAdviceNo"
-            name="audienceAdviceOption"
-            value="No"
-            onChange={(e) => {
-              handleIsListeningForAdvice(e);
-            }}
-          />
-          <label htmlFor="workDemandNo" className="p-paragraph text-gray-800">
-            No
-          </label>
-          <br />
-        </div>
-
-        <div id="looking-for" className="input-label text-gray-600 mt-20">
-          <p>For this project I am also looking for...<span className="required">*</span></p>
-          {persons.map((person, index) => {
-            return (
-              <div key={index}>
-                <input
-                  type="checkbox"
-                  id={"person" + index}
-                  name="person"
-                  value={person.value}
-                  onChange={(e) => {
-                    handleIsLookingFor(e, index);
-                  }}
-                />
-                <label
-                  htmlFor={"person" + index}
-                  className="p-paragraph text-gray-800"
-                >
-                  {person.value}
-                </label>
-                <br />
-              </div>
-            );
-          })}
-
-          <div>
+          <div id="audience-advice" className="mt-4">
             <input
-              type="checkbox"
-              id={"person4"}
-              name="person"
-              value={other}
-              onChange={(e) => {
-                setOther(!other);
+              type="radio"
+              id="audienceAdvice"
+              name="audienceAdviceOption"
+              value="Yes"
+              checked={project.isListeningForAdvice}
+              onChange={(e) => {}}
+              onClick={(e) => {
+                setProject({
+                  ...project,
+                  isListeningForAdvice: !project.isListeningForAdvice,
+                });
               }}
+              disabled={formLoading}
             />
-            <label htmlFor={"person4"} className="p-paragraph text-gray-800">
-              Other
+            <label
+              htmlFor="audienceAdviceYes"
+              className="p-paragraph text-gray-600 ml-2"
+            >
+              For this project I am open to listen to the audience's advice...
+              <span className="required">*</span>
             </label>
             <br />
           </div>
 
-          {other && (
-            <AddMultipleIsLookingForComponent
-              dynamicInput={dynamicInput}
-              setDynamicInput={setDynamicInput}
-            />
-          )}
+          <div id="looking-for" className="mt-4">
+            <p className="input-label text-gray-600">
+              For this project I am also looking for...
+              <span className="required">*</span>
+            </p>
+            <div className="mt-2">
+              {persons.map((person, index) => {
+                return (
+                  <div key={index}>
+                    <input
+                      type="checkbox"
+                      id={"person" + index}
+                      name="person"
+                      value={person.value}
+                      onChange={(e) => {
+                        handleIsLookingFor(e, index);
+                      }}
+                      disabled={formLoading}
+                    />
+                    <label
+                      htmlFor={"person" + index}
+                      className="text-gray-800 text-sm font-semibold ml-2"
+                    >
+                      {person.value}
+                    </label>
+                    <br />
+                  </div>
+                );
+              })}
+
+              <div>
+                <input
+                  type="checkbox"
+                  id={"person4"}
+                  name="person"
+                  value={other}
+                  onChange={(e) => {
+                    setOther(!other);
+                  }}
+                  disabled={formLoading}
+                />
+                <label
+                  htmlFor={"person4"}
+                  className="text-gray-800 text-sm font-semibold ml-2"
+                >
+                  Other
+                </label>
+                <br />
+              </div>
+
+              {other && (
+                <AddMultipleIsLookingForComponent
+                  dynamicInput={dynamicInput}
+                  setDynamicInput={setDynamicInput}
+                  formLoading={formLoading}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

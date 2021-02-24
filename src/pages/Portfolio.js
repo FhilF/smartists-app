@@ -7,7 +7,7 @@ import { ReactComponent as AddOutlinedIcon } from "../assets/svg-icon/AddOutline
 
 import Button from "../customComponents/Button";
 
-import AddPortfolioComponent from "../components/Portfolio/AddPortfolio";
+import AddPortfolioComponent from "../components/FeaturedArtwork/Add";
 
 function Portfolio() {
   return (

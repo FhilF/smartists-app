@@ -11,7 +11,8 @@ function ButtonDropdown(props) {
     name,
     required,
     className,
-    disabled
+    disabled,
+    defaultValue
   } = props;
   return (
     <div
@@ -30,8 +31,9 @@ function ButtonDropdown(props) {
         id={id}
         value={value}
         onChange={onChange}
-        className="input-select mt-5"
+        className="input-select mt-1"
         disabled={disabled}
+        defaultValue={defaultValue}
       >
         {children}
       </select>

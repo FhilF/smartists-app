@@ -11,3 +11,10 @@ export const isEmpty = (str) => {
   }
   return false;
 };
+
+export const truncate = (input, lengthTrunc) => {
+  if (input.length > lengthTrunc) {
+    return input.substring(0, lengthTrunc) + "...";
+  }
+  return input;
+};

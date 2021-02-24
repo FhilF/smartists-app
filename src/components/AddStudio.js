@@ -2,24 +2,42 @@ import React, { useState } from "react";
 
 import { useConnect } from "@blockstack/connect";
 import StudioModel from "../models/Studio";
+import SmartistsUserModel from "../models/SmartistsUser";
+import Button from "../customComponents/Button";
+import { useBlockstack } from "react-blockstack";
+import Loader from "react-loader-spinner";
+import { result } from "lodash";
+import { useAlert } from "react-alert";
 
 function AddStudio(props) {
-  const { setFormLoading, userSession, username,handleUserStudio} = props;
+  const { match, handleStudio } = props;
+  const alert = useAlert();
+
+  const [formLoading, setFormLoading] = useState(false);
+
+  const { userSession } = useBlockstack();
   const handleAddStudio = async (e) => {
     setFormLoading(true);
     e.preventDefault();
     if (userSession.isUserSignedIn()) {
       const userData = userSession.loadUserData();
-      if (userData.username === username) {
-        StudioModel.fetchOwnList()
+      if (userData.username === match.params.username) {
+        SmartistsUserModel.fetchOwnList()
+          .then((result) => {
+            if (result.length !== 0) {
+              return StudioModel.fetchOwnList();
+            } else {
+              alert.error("Please sign in to continue");
+              userSession.signUserOut(window.location.origin);
+              throw "error";
+            }
+          })
           .then((result) => {
             if (result.length === 0) {
               const studioModel = new StudioModel({
                 username: userData.username,
                 banner: null,
-                artworks: [],
               });
-              //   console.log(studioModel);
               return studioModel.save();
             } else {
               console.log("You already have one");
@@ -28,32 +46,47 @@ function AddStudio(props) {
           })
           .then((result) => {
             if (result) {
-              console.log("success");
-              handleUserStudio();
-              setFormLoading(false);
+            alert.success("Successfully created your studio");
+              handleStudio(result);
             } else {
-              handleUserStudio();
-              setFormLoading(false);
+              throw "error";
             }
           })
           .catch((error) => {
-            console.log(error);
+            alert.error("There was an error submitting your form");
             setFormLoading(false);
           });
       } else {
-        console.log("cannot create that is not yours");
+        alert.error("Please sign in to continue");
+        userSession.signUserOut(window.location.origin);
       }
     }
   };
   return (
-    <div>
-      <button
-        onClick={(e) => {
-          handleAddStudio(e);
-        }}
-      >
-        Create Studio
-      </button>
+    <div className="mt-8">
+      <div className="flex justify-center">
+        <div className="relative inline">
+          <Button
+            onClick={(e) => {
+              handleAddStudio(e);
+            }}
+            variant="contained"
+            color="secondary"
+            disabled={formLoading}
+          >
+            {formLoading ? <>Creating Studio...</> : <>Create Studio</>}
+          </Button>
+          {formLoading && (
+            <Loader
+              className="btn-loader"
+              type="Oval"
+              color="#00BFFF"
+              height={25}
+              width={25}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

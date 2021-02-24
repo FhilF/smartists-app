@@ -14,7 +14,7 @@ import {
 
 function UpdateBanner(props) {
   const { activeAction, setActiveAction, studio, index } = props;
-  const { userSession } = useBlockstack();
+  const {  } = useBlockstack();
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tempImgUrls, setTempImgUrls] = useState();

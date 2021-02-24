@@ -1,173 +1,347 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Component } from "react";
+
+import ProjectModel from "models/Project";
+import FeaturedProjectComponent from "components/Project";
+import AddFeaturedProject from "components/Project/Add";
+import { getMediaFile } from "lib/media";
+
 import { useBlockstack } from "react-blockstack";
+import { connect } from "react-redux";
+import { useAlert } from "react-alert";
+import { fetchProject, clearProject } from "utils/actions/projectAction";
 
-import AddProject from "../components/Project/AddProject";
-import "../scss/featured-project.scss";
-import ProjectModel from "../models/Project";
-import { getMediaFile } from "../lib/media";
-import ImagePlaceHolder from "../assets/images/mountain-placeholder.jpg";
-import DeleteProject from "../components/Project/DeleteProject";
-import UpdateProject from "../components/Project/UpdateProject";
+import Single from "../components/Project/Single";
+import View from "../components/Project/View";
 
-import { MdMoreHoriz } from "react-icons/md";
+class FeaturedProject extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isFetchingProject: true,
+      isModifyingProject: false,
+      projects: [],
+      viewProject: { index: null, data: {} },
+    };
+  }
 
-
-function FeaturedProject(props) {
-  const { userProfile, history, match, userStudio } = props;
-  const { userSession } = useBlockstack();
-
-  const [isfetching, setIsFetching] = useState(true);
-  const [project, setProject] = useState(null);
-
-  const handleProject = () => {
-    setIsFetching(true);
-    ProjectModel.fetchOwnList()
-      .then((result) => {
-        return Promise.all(
-          result.map(async (el, i) => {
-            return getMediaFile(match.params.username, el.attrs.fileName).then(
-              (value) => {
-                if (value) {
-                  el.attrs.file = value;
-                } else {
-                  el.attrs.file = null;
-                }
-                // delete el.attrs.media["fileName"];
-                return el;
-              }
-            );
-          })
-        );
+  handleAdd = (singleProject) => {
+    this.setState({ isModifyingProject: true });
+    const { smartistsMember } = this.props;
+    getMediaFile(smartistsMember.username, singleProject.attrs.fileName)
+      .then((value) => {
+        if (value) {
+          singleProject.attrs.file = value;
+        } else {
+          singleProject.attrs.file = null;
+        }
+        // delete el.attrs.media["fileName"];
+        return singleProject;
       })
-      .then((result) => {
-        setProject(result);
-        setIsFetching(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        setIsFetching(false);
+      .then((res) => {
+        this.setState({
+          projects: [...this.state.projects, res],
+          isModifyingProject: false,
+        });
       });
   };
 
-  useEffect(() => {
-    handleProject();
-  }, []);
+  handleDeleteUpdateList = (index) => {
+    this.setState({ isModifyingProject: true });
+    const { projects } = this.state;
+    var arrays = [...projects]; // make a separate copy of the array
+    arrays.splice(index, 1);
+    this.setState({
+      projects: arrays,
+      isModifyingProject: true,
+      viewProject: {},
+    });
+  };
 
-  useEffect(() => {}, [isfetching]);
+  handlePreview = (index, projectForViewing) => {
+    this.setState({ viewProject: { index: index, data: projectForViewing } });
+  };
+
+  handleProjectUpdate = (index, newProject) => {
+    this.setState({ isModifyingProject: true });
+    const { smartistsMember } = this.props;
+    getMediaFile(smartistsMember.username, newProject.attrs.fileName)
+      .then((value) => {
+        if (value) {
+          newProject.attrs.file = value;
+        } else {
+          newProject.attrs.file = null;
+        }
+        // delete el.attrs.media["fileName"];
+        return newProject;
+      })
+      .then((res) => {
+        const newArray = this.state.projects;
+        newArray[index] = res;
+        this.setState({
+          project: newArray,
+          viewProject: { index: index, data: res },
+          isModifyingProject: false,
+        });
+      });
+  };
+
+  handleProject = () => {
+    this.setState({ isFetchingProject: true });
+    const { smartistsMember, isUser, fetchProject } = this.props;
+    if (isUser) {
+      ProjectModel.fetchOwnList()
+        .then((result) => {
+          if (result.length !== 0) {
+            return Promise.all(
+              result.map(async (el, i) => {
+                return getMediaFile(
+                  smartistsMember.username,
+                  el.attrs.fileName
+                ).then((value) => {
+                  if (value) {
+                    el.attrs.file = value;
+                  } else {
+                    el.attrs.file = null;
+                  }
+                  // delete el.attrs.media["fileName"];
+                  return el;
+                });
+              })
+            );
+          } else {
+            return [];
+          }
+        })
+        .then((result) => {
+          console.log(result);
+          this.setState({
+            projects: result,
+            isFetchingProject: false,
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          this.setState({ isFetchingProject: false });
+        });
+    } else {
+      const query = {
+        studioId: smartistsMember.studio._id,
+      };
+      fetchProject(query, smartistsMember.studio.username);
+      this.setState({ isFetchingProject: false });
+    }
+  };
+
+  componentDidMount() {
+    this.handleProject();
+  }
+  render() {
+    const {
+      isFetchingProject,
+      isModifyingProject,
+      projects,
+      viewProject,
+    } = this.state;
+    const {
+      isUser,
+      smartistsMember,
+      loadingProject,
+      fetchedProject,
+    } = this.props;
+    return (
+      <>
+        <Content
+          isUser={isUser}
+          isFetchingProject={isFetchingProject}
+          projects={projects}
+          smartistsMember={smartistsMember}
+          handleAdd={this.handleAdd}
+          isModifyingProject={isModifyingProject}
+          handleDeleteUpdateList={this.handleDeleteUpdateList}
+          handlePreview={this.handlePreview}
+          viewProject={viewProject}
+          handleProjectUpdate={this.handleProjectUpdate}
+          loadingProject={loadingProject}
+          fetchedProject={fetchedProject}
+        />
+      </>
+    );
+  }
+}
+
+const Content = (props) => {
+  const {
+    isUser,
+    isFetchingProject,
+    projects,
+    smartistsMember,
+    handleAdd,
+    isModifyingProject,
+    handleDeleteUpdateList,
+    handlePreview,
+    viewProject,
+    handleProjectUpdate,
+    loadingProject,
+    fetchedProject,
+  } = props;
+
+  const { userSession } = useBlockstack();
+
+  const [viewProjectCopy, setViewProjectCopy] = useState({
+    index: null,
+    data: {},
+  });
+
+  const [viewUserProject, setViewUserProject] = useState({});
+
+
+  const [handleDialog, setHandleDialog] = useState(false);
+
+  const handleModalOpen = (data) => {
+    document.body.style.overflow = "hidden";
+    setViewUserProject(data);
+    setHandleDialog(true);
+  };
+
+  const handleModalClose = () => {
+    document.body.style.overflow = "visible";
+    setHandleDialog(false);
+    setViewUserProject({});
+  };
+
+  useEffect(() => {
+    if (typeof viewProject.data === "object" && viewProject.data !== null) {
+      if (viewProject.index !== null) {
+        setViewProjectCopy({
+          index: viewProject.index,
+          data: Object.assign({}, viewProject.data),
+        });
+      }
+    }
+  }, [viewProject]);
+
+  useEffect(() => {}, [viewProjectCopy]);
 
   return (
-    <div className="page-root">
-      <div className=" p-20 pb-40">
-        <div className="header-w-controller">
-          <h1 className="component-header header-f">
-            Projects In Progress looking for collaborators
-          </h1>
-          {!isfetching && (
-            <AddProject userSession={userSession} userStudio={userStudio[0]} />
-          )}
-        </div>
-
-        <hr className="mt-40" />
-
-        <div className="mt-20">
-          <div>
-            {isfetching ? (
-              <>Loading</>
-            ) : (
-              <>
-                {project.map((el, index) => {
-                  return (
-                    <div
-                      className="card featured-project-item bb mt-10 p-20"
-                      key={index}
-                      style={{ borderRadius: "4px" }}
-                    >
-                      <div className="row row-gap-5 bb">
-                        <div className="media-container col-item col-12 col-lg-4 bb">
-                          <div
-                            className="featured-project featured-project-image"
-                            style={{
-                              backgroundImage: `url(${
-                                el.attrs.file ? el.attrs.file : ImagePlaceHolder
-                              })`,
-                            }}
-                          ></div>
-                        </div>
-                        <div className="col-item col-12 col-lg-8 bb">
-                          <div className="header-w-controller">
-                            <p className="p-text-bold text-gray-900 header-f">
-                              {el.attrs.title}
-                            </p>
-                            {/* <DeletePortfolio
-                          portfolio={el}
-                          handlePortfolio={handlePortfolio} */}
-                            {/* /> */}
-                            <div style={{display:"flex"}}>
-                              <UpdateProject projectOld={el}userSession={userSession} handleProject={handleProject}/>
-                              <DeleteProject
-                                project={el}
-                                handleProject={handleProject}
-                              />
-                            </div>
-                          </div>
-                          <p className="p-text text-secondary mt-5">
-                            {el.attrs.tagline}
-                          </p>
-                          <p className="p-paragraph text-gray-600 mt-5">
-                            {el.attrs.description}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <hr className="mt-20" />
-                        <div style={{ display: "flex" }} className="">
-                          <p className="p-paragraph text-gray-600">
-                            For this project I am open to listen to the
-                            audience's advice:
-                          </p>
-                          <p className="p-paragraph text-secondary">
-                            &nbsp;
-                            {el.attrs.isListeningForAdvice ? (
-                              <>&#10003;</>
-                            ) : (
-                              <>&#10005;</>
-                            )}
-                          </p>
-                        </div>
-
-                        <p className="p-paragraph text-gray-600 pt-10">
-                          For this project I am looking for creative partners or
-                          collaborators with the following skills:
-                        </p>
-                        <div className="p-paragraph text-gray-800">
-                          <ul className="mt-5">
-                            {el.attrs.requiredSkills.map((skill, index) => {
-                              return <li key={index}>{skill.value}</li>;
-                            })}
-                          </ul>
-                        </div>
-
-                        <p className="p-paragraph text-gray-600">
-                          For this project I am also looking for:
-                        </p>
-                        <div className="p-paragraph text-gray-800">
-                          <ul className="mt-5">
-                            {el.attrs.extraUsers.map((skill, index) => {
-                              return <li key={index}>{skill.value}</li>;
-                            })}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
+    <div>
+      <div className="mt-12 flex justify-center">
+        <div className="md:max-w-screen-md w-full">
+          <div className="flex items-center">
+            <p className="text-gray-700 text-3xl flex-grow">
+              Projects in progress looking for collaborators
+            </p>
+            <div>
+              {isUser && !isFetchingProject && (
+                <AddFeaturedProject
+                  userSession={userSession}
+                  userStudio={smartistsMember.studio.attrs}
+                  handleAdd={handleAdd}
+                  isModifyingProject={isModifyingProject}
+                />
+              )}
+            </div>
+          </div>
+          <div className="mt-12">
+            {handleDialog && !isFetchingProject && (
+              <View handleModal={handleModalClose} project={viewUserProject} isUser={isUser} />
             )}
+            {isUser ? (
+              !isFetchingProject ? (
+                projects.length !== 0 ? (
+                  <>
+                    {viewProjectCopy.index !== null ? (
+                      <Single
+                        userSession={userSession}
+                        handlePreview={handlePreview}
+                        viewProject={viewProject}
+                        isUser={isUser}
+                        handleDeleteUpdateList={handleDeleteUpdateList}
+                        handleProjectUpdate={handleProjectUpdate}
+                        viewProjectCopy={viewProjectCopy}
+                        setViewProjectCopy={setViewProjectCopy}
+                        isModifyingProject={isModifyingProject}
+                      />
+                    ) : (
+                      <div>
+                        {projects.map((el, i) => {
+                          return (
+                            <FeaturedProjectComponent
+                              key={i}
+                              project={el}
+                              isModifyingProject={isModifyingProject}
+                              isUser={isUser}
+                              viewProject={viewProject}
+                              handlePreview={handlePreview}
+                              index={i}
+                              handleModalOpen={handleModalOpen}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="py-20 text-center">
+                    <p className="text-2xl text-gray-300">No projects yet</p>
+                  </div>
+                )
+              ) : (
+                <>Loading</>
+              )
+            ) : null}
+
+            {!isUser ? (
+              !isFetchingProject ? (
+                !loadingProject ? (
+                  fetchedProject.length !== 0 ? (
+                    <>
+                      {viewProjectCopy.index !== null ? (
+                        <Single
+                          handlePreview={handlePreview}
+                          viewProject={viewProject}
+                          isUser={isUser}
+                        />
+                      ) : (
+                        <div>
+                          {fetchedProject.map((el, i) => {
+                            return (
+                              <FeaturedProjectComponent
+                                key={i}
+                                project={el}
+                                isUser={isUser}
+                                viewProject={viewProject}
+                                handlePreview={handlePreview}
+                                index={i}
+                                handleModalOpen={handleModalOpen}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="py-20 text-center">
+                      <p className="text-2xl text-gray-300">No projects yet</p>
+                    </div>
+                  )
+                ) : (
+                  <>Loading</>
+                )
+              ) : (
+                <>Loading</>
+              )
+            ) : null}
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default FeaturedProject;
+const mapStateToProps = (state) => ({
+  fetchedProject: state.projectReducer.project,
+  loadingProject: state.projectReducer.loadingProject,
+  errorProject: state.projectReducer.errorProject,
+});
+
+export default connect(mapStateToProps, { fetchProject })(FeaturedProject);

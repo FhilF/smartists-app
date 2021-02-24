@@ -23,12 +23,27 @@ export const fetchSmartistsMemberAPI = async (query) => {
  * @param createdBy - messages created by this username
  * @param fetcher - pass the current user's username, to get info about if they've voted
  */
-export const fetchPortfolioAPI = async (query) => {
+export const fetchSmartistsMembersAPI = async (query) => {
   const { apiServer } = getConfig();
-  const url = `${apiServer}/api/portfolio?${qs.stringify(query)}`;
+  const url = `${apiServer}/api/smartists-users?${qs.stringify(query)}`;
   const response = await fetch(url);
   const data = await response.json();
-  return data.portfolio;
+  return data.smartistsUsers;
+};
+
+/**
+ *
+ * @param {*} query - Use `lt`, `createdBy`, and `fetcher` to query messages.
+ * @param lt - fetch all votes created before the time provided
+ * @param createdBy - messages created by this username
+ * @param fetcher - pass the current user's username, to get info about if they've voted
+ */
+export const fetchFeaturedArtworkAPI = async (query) => {
+  const { apiServer } = getConfig();
+  const url = `${apiServer}/api/featured-artwork?${qs.stringify(query)}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data.featuredArtwork;
 };
 
 

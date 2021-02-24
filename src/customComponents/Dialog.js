@@ -2,14 +2,20 @@ import React from "react";
 import classNames from "classnames";
 
 function Dialog(props) {
-  const { children, handleClose, className, style } = props;
+  const { children, handleClose, className, style, disabled } = props;
   return (
     <div className="dialog-root">
       <div className="dialog-backdrop"></div>
       <div
-        className="dialog-container"
+        className="dialog-container pl-6 pr-6"
         onClick={(e) => {
-          handleClose();
+          if (typeof disabled === "undefined") {
+            handleClose();
+          } else {
+            if (disabled === false) {
+              handleClose();
+            }
+          }
         }}
       >
         <div

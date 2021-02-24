@@ -3,7 +3,6 @@ import { Connect } from "@blockstack/connect";
 import { useBlockstack, useConnectOptions } from "react-blockstack";
 import { connectOptions } from "./UserSession";
 import { configure, User, getConfig, Model } from "radiks";
-import "./App.css";
 
 import SmartistsUserModel from "./models/SmartistsUser";
 
@@ -21,26 +20,26 @@ const handleRadiksSignIn = async (
     const smartistsUser = await SmartistsUserModel.fetchOwnList();
     setSmartistsUser(smartistsUser);
     setIsSigningIn(false);
-    setIsFetchingUser(false)
+    setIsFetchingUser(false);
   } catch (error) {
     console.log(error);
     setSmartistsUser([]);
     setIsSigningIn(false);
-    setIsFetchingUser(false)
+    setIsFetchingUser(false);
   }
 };
 
-const handleUser = async (userSession, setSmartistsUser,setIsFetchingUser) => {
+const handleUser = async (userSession, setSmartistsUser, setIsFetchingUser) => {
   if (userSession) {
     if (userSession.isUserSignedIn()) {
       try {
         const smartistsUser = await SmartistsUserModel.fetchOwnList();
         setSmartistsUser(smartistsUser);
-        setIsFetchingUser(false)
+        setIsFetchingUser(false);
       } catch (error) {
         setSmartistsUser([]);
         console.log(error);
-        setIsFetchingUser(false)
+        setIsFetchingUser(false);
       }
     }
   }
@@ -60,15 +59,23 @@ function App(props) {
   }, [session]);
 
   useEffect(() => {
-    configure({
-      apiServer: "http://localhost:5002",
-      userSession,
-    });
-
-    handleUser(userSession, setSmartistsUser, setIsFetchingUser);
+    if (userSession) {
+      configure({
+        apiServer: "http://localhost:5002",
+        userSession,
+      });
+      if (userSession.isSignInPending()) {
+        userSession.handlePendingSignIn().then((userData) => {
+          handleUser(userSession, setSmartistsUser, setIsFetchingUser);
+          window.history.replaceState({}, document.title, "/");
+        });
+      } else if (userSession.isUserSignedIn()) {
+        handleUser(userSession, setSmartistsUser, setIsFetchingUser);
+      }
+    }
   }, [userSession]);
 
-  useEffect(() => {}, [isSigningIn]);
+  useEffect(() => {}, []);
 
   useEffect(() => {
     setLoading(false);
@@ -81,7 +88,11 @@ function App(props) {
           connectOptions(({ userSession }) => {
             setUserSession(userSession);
             const userData = userSession.loadUserData();
-            handleRadiksSignIn( setIsSigningIn, setSmartistsUser, setIsFetchingUser);
+            handleRadiksSignIn(
+              setIsSigningIn,
+              setSmartistsUser,
+              setIsFetchingUser
+            );
           })
         )}
       >

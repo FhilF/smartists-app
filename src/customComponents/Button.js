@@ -48,6 +48,7 @@ function TextFunctionButton(props) {
     variant,
     disabled,
     link,
+    style,
   } = props;
   const history = useHistory();
 
@@ -64,6 +65,7 @@ function TextFunctionButton(props) {
           type={type ? type : "button"}
           disabled={disabled}
           href={link}
+          style={style}
           onClick={
             disabled
               ? (e) => {
@@ -90,6 +92,7 @@ function TextFunctionButton(props) {
           type={type ? type : "button"}
           onClick={onClick}
           disabled={disabled}
+          style={style}
         >
           {children ? children : label}
           {!disabled && <Ripple color="rgba(0, 0, 0, 0.14)" />}

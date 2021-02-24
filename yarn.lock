@@ -1909,9 +1909,9 @@
   "resolved" "https://registry.npmjs.org/@types/aria-query/-/aria-query-4.2.0.tgz"
   "version" "4.2.0"
 
-"@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
+"@types/babel__palette@^7.0.0", "@types/babel__palette@^7.1.7":
   "integrity" "sha512-wMTHiiTiBAAPebqaPiPDLFA4LYPKr6Ph0Xq/6rq1Ur3v66HXyG+clfR9CNETkD7MQS8ZHvpQOtA53DLws5WAEQ=="
-  "resolved" "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.1.12.tgz"
+  "resolved" "https://registry.npmjs.org/@types/babel__palette/-/babel__palette-7.1.12.tgz"
   "version" "7.1.12"
   dependencies:
     "@babel/parser" "^7.1.0"
@@ -2970,7 +2970,7 @@
   dependencies:
     "@jest/transform" "^26.6.2"
     "@jest/types" "^26.6.2"
-    "@types/babel__core" "^7.1.7"
+    "@types/babel__palette" "^7.1.7"
     "babel-plugin-istanbul" "^6.0.0"
     "babel-preset-jest" "^26.6.2"
     "chalk" "^4.0.0"
@@ -3013,7 +3013,7 @@
   dependencies:
     "@babel/template" "^7.3.3"
     "@babel/types" "^7.3.3"
-    "@types/babel__core" "^7.0.0"
+    "@types/babel__palette" "^7.0.0"
     "@types/babel__traverse" "^7.0.6"
 
 "babel-plugin-macros@2.8.0":

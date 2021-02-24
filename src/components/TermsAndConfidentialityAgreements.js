@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 
 import Dialog from "../customComponents/Dialog";
-import ContainedFunctionButton from "../customComponents/ContainedFunctionButton";
+import Button from "../customComponents/Button";
 
 function TermsAndConfidentialityAgreements(props) {
-  const { agreedToTerms, setAgreedToTerms, disabled } = props;
+  const { agreedToTerms, setAgreedToTerms, disabled,alert } = props;
   const [showTerms, setShowTerms] = useState(false);
   const handleDialog = () => {
     var x = document.getElementsByTagName("BODY")[0];
@@ -17,25 +17,38 @@ function TermsAndConfidentialityAgreements(props) {
   };
 
   return (
-    <div className="mt-10">
-      <div className="terms-and-agreements-root" style={{display:"flex", alignItems:"center"}}>
+    <div className="mt-4">
+      <div
+        className="terms-and-agreements-root"
+        style={{ display: "flex", alignItems: "center" }}
+      >
         <input
           type="checkbox"
           id="term&agreements"
           name="term&agreements"
+          checked={Object.keys(agreedToTerms).every(function (k) {
+            return agreedToTerms[k];
+          })}
           onChange={(e) => {
-            setAgreedToTerms(!agreedToTerms);
+            // setAgreedToTerms(!agreedToTerms);
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            handleDialog();
           }}
           value={agreedToTerms}
           disabled={disabled}
+          className="cursor-pointer"
         />
-        <p className="p-paragraph ml-10">
+        <p className=" text-sm font-semibold ml-2">
           I agree to the{" "}
           <span
-            className="text-button"
+            className="text-secondary cursor-pointer hover:underline"
             onClick={(e) => {
               e.preventDefault();
-              handleDialog();
+              if(!disabled){
+                handleDialog();
+              }
             }}
           >
             Terms and confidentiality agreements
@@ -47,22 +60,19 @@ function TermsAndConfidentialityAgreements(props) {
           handleClose={handleDialog}
           style={{ marginTop: "10vh", marginBottom: "10vw", width: "800px" }}
         >
-          <div className="pl-40 pr-40 pt-20 pb-40">
+          <div className="dialog-content">
             <div className="center-text">
-              <h3
-                className="page-header-paragraph mt-20"
-                style={{ fontSize: "23px" }}
-              >
+              <h3 className="text-secondary text-2xl">
                 Smartists Confidentiality Agreement
               </h3>
             </div>
 
             <div>
-              <div className="mt-20">
+              <div className="mt-4">
                 <p className="paragraph-header">
                   Intellectual Property & Copyrights
                 </p>
-                <p className="paragraph mt-10">
+                <p className="paragraph mt-2">
                   The Intellectual Property Rights of Art works on a Smartsist
                   Studio belong to the Artist identified by his/her blockstackID
                   as the owner of the Studio. Artists are responsible for the
@@ -70,7 +80,7 @@ function TermsAndConfidentialityAgreements(props) {
                   Authors in their Smartists' Studio are the owners of the
                   intellectual property of their art works in all extension.
                 </p>
-                <p className="paragraph mt-10">
+                <p className="paragraph mt-2">
                   In case of on-demand Art works, the artist will keep the
                   Intellectual Property ownership of all materials delivered.
                   The artist is the only owner of any concepts, ideas, copy
@@ -78,16 +88,38 @@ function TermsAndConfidentialityAgreements(props) {
                   delivered in connection with projects presented by the
                   Art-Users.
                 </p>
-                <p className="paragraph mt-10">
+                <p className="paragraph mt-2">
                   The Intellectual Property Rights related or derived from the
                   information shared about a specific project are property of
                   the author who first introduced the project on Smartists.{" "}
                 </p>
+                <div className="mt-2">
+                  <input
+                    type="checkbox"
+                    id="term&agreements1"
+                    name="term&agreements1"
+                    checked={agreedToTerms.ag1}
+                    onChange={(e) => {
+                      setAgreedToTerms({
+                        ...agreedToTerms,
+                        ag1: !agreedToTerms.ag1,
+                      });
+                    }}
+                    disabled={disabled}
+                    className="cursor-pointer"
+                  />
+                  <label
+                    htmlFor="term&agreements1"
+                    className="text-sm font-semibold text-secondary ml-2"
+                  >
+                    Agree
+                  </label>
+                </div>
               </div>
 
-              <div className="mt-20">
+              <div className="mt-4">
                 <p className="paragraph-header">Confidentiality Definition</p>
-                <p className="paragraph mt-10">
+                <p className="paragraph mt-2">
                   All information -in any digital file format- provided by any
                   Artist in his/her Smartists Studio is considered confidential.
                   All information provided by any Art-user about any Art work
@@ -95,8 +127,8 @@ function TermsAndConfidentialityAgreements(props) {
                   confidential. Such Confidentiality definition comes with the
                   following exceptions: 
                 </p>
-                <div className="mt-10">
-                  <ul className="paragraph-list">
+                <div className="mt-2">
+                  <ul className="paragraph-list list-disc">
                     <li className="paragraph-list-item">
                       Information in connection with an Art work project which
                       is already in the possession of the interested user prior
@@ -118,16 +150,38 @@ function TermsAndConfidentialityAgreements(props) {
                     </li>
                   </ul>
                 </div>
+                <div className="mt-2">
+                  <input
+                    type="checkbox"
+                    id="term&agreements2"
+                    name="term&agreements2"
+                    checked={agreedToTerms.ag2}
+                    onChange={(e) => {
+                      setAgreedToTerms({
+                        ...agreedToTerms,
+                        ag2: !agreedToTerms.ag2,
+                      });
+                    }}
+                    disabled={disabled}
+                    className="cursor-pointer"
+                  />
+                  <label
+                    htmlFor="term&agreements2"
+                    className="text-sm font-semibold text-secondary ml-2"
+                  >
+                    Agree
+                  </label>
+                </div>
               </div>
 
-              <div className="mt-20">
+              <div className="mt-4">
                 <p className="paragraph-header">Obligations</p>
-                <p className="paragraph mt-10">
+                <p className="paragraph mt-2">
                   Any Art-user interested in a specific Art work or project in a
                   Smartists Studio has the following obligations:
                 </p>
-                <div className="mt-10">
-                  <ul className="paragraph-list">
+                <div className="mt-2">
+                  <ul className="paragraph-list list-disc">
                     <li className="paragraph-list-item">
                       Crediting the Artist for his/her work;
                     </li>
@@ -154,13 +208,35 @@ function TermsAndConfidentialityAgreements(props) {
                     </li>
                   </ul>
                 </div>
+                <div className="mt-2">
+                  <input
+                    type="checkbox"
+                    id="term&agreements3"
+                    name="term&agreements3"
+                    checked={agreedToTerms.ag3}
+                    onChange={(e) => {
+                      setAgreedToTerms({
+                        ...agreedToTerms,
+                        ag3: !agreedToTerms.ag3,
+                      });
+                    }}
+                    disabled={disabled}
+                    className="cursor-pointer"
+                  />
+                  <label
+                    htmlFor="term&agreements3"
+                    className="text-sm font-semibold text-secondary ml-2"
+                  >
+                    Agree
+                  </label>
+                </div>
               </div>
 
-              <div className="mt-20">
+              <div className="mt-4">
                 <p className="paragraph-header">
                   Disclosure, Damages and Claims
                 </p>
-                <p className="paragraph mt-10">
+                <p className="paragraph mt-2">
                   The author and the interested-user are aware that disclosure
                   or misuse of Confidential Information will produce irreparable
                   damage to the commercial and financial interests of the other
@@ -168,27 +244,89 @@ function TermsAndConfidentialityAgreements(props) {
                   party for the damage caused and claimed in accordance with the
                   current legislation of the author's jurisdiction.
                 </p>
+
+                <div className="mt-2">
+                  <input
+                    type="checkbox"
+                    id="term&agreements4"
+                    name="term&agreements4"
+                    checked={agreedToTerms.ag4}
+                    onChange={(e) => {
+                      setAgreedToTerms({
+                        ...agreedToTerms,
+                        ag4: !agreedToTerms.ag4,
+                      });
+                    }}
+                    disabled={disabled}
+                    className="cursor-pointer"
+                  />
+                  <label
+                    htmlFor="term&agreements4"
+                    className="text-sm font-semibold text-secondary ml-2"
+                  >
+                    Agree
+                  </label>
+                </div>
               </div>
 
-              <div className="mt-20">
+              <div className="mt-4">
                 <p className="paragraph-header">Application</p>
-                <p className="paragraph mt-10">
+                <p className="paragraph mt-2">
                   The Smartists Confidentiality Agreement applies to projects
                   and on demand commissions as well as any other deals between
                   Smartists members.
                 </p>
+                <div className="mt-2">
+                  <input
+                    type="checkbox"
+                    id="term&agreements5"
+                    name="term&agreements5"
+                    checked={agreedToTerms.ag5}
+                    onChange={(e) => {
+                      setAgreedToTerms({
+                        ...agreedToTerms,
+                        ag5: !agreedToTerms.ag5,
+                      });
+                    }}
+                    disabled={disabled}
+                    className="cursor-pointer"
+                  />
+                  <label
+                    htmlFor="term&agreements5"
+                    className="text-sm font-semibold text-secondary ml-2"
+                  >
+                    Agree
+                  </label>
+                </div>
               </div>
             </div>
-            <div className="dialog-action mt-30">
-              <ContainedFunctionButton
+            <div className="dialog-action mt-4">
+              <Button
                 onClick={(e) => {
                   e.preventDefault();
                   handleDialog();
                 }}
-                color="btn-secondary"
               >
-                Got it
-              </ContainedFunctionButton>
+                Cancel
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (
+                    Object.keys(agreedToTerms).every(function (k) {
+                      return agreedToTerms[k];
+                    })
+                  ) {
+                    handleDialog();
+                  }else{
+                    alert.error("You haven't agreed to all terms")
+                  }
+                }}
+                color="secondary"
+                variant="contained"
+              >
+                Submit
+              </Button>
             </div>
           </div>
         </Dialog>

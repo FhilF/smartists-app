@@ -1,0 +1,54 @@
+@import "/variables/_breakpoints.scss";
+
+@import "/customComponents/_menuDropDown.scss";
+@import "/customComponents/_containedNavButton.scss";
+@import "/customComponents/_textNavButton.scss";
+@import "/customComponents/_checkBox.scss";
+@import "/customComponents/_dialog.scss";
+
+@import "/elements/_button.scss";
+@import "/elements/_typography.scss";
+@import "/elements/_inputText.scss";
+@import "/elements/_select.scss";
+@import "/elements/_content.scss";
+@import "/elements/_svg.scss";
+
+@import "/mixins/_typography.scss";
+@import "/mixins/_snackbar.scss";
+
+@import "./variables/palette";
+
+.bg-primary {
+  background-color: $primary;
+}
+
+.bg-secondary {
+  background-color: $secondary;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.required {
+  color: $secondary;
+}
+
+.no-focus-media {
+  &:focus {
+    outline: 0px;
+  }
+}
+
+.svg-icon {
+  font-size: 24px;
+}
+
+.btn-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -12px;
+  margin-left: -12px;
+}
+

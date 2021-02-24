@@ -8,7 +8,7 @@ import { ReactComponent as DescriptionOutlinedIcon } from "../assets/svg-icon/De
 import { ReactComponent as ExitToAppOutlinedIcon } from "../assets/svg-icon/ExitToAppOutlinedIcon.svg";
 
 function NavProfileMenu(props) {
-  const { profile, signOut,userSession } = props;
+  const { profile, signOut, userSession, history, smartistsUser } = props;
   const [profileMenuOpen, setprofileMenuOpen] = useState(false);
   const handleMenuProfileOpen = () => {
     setprofileMenuOpen(true);
@@ -40,20 +40,27 @@ function NavProfileMenu(props) {
       {profileMenuOpen ? (
         <MenuDropDown handleMenuClose={handleMenuClose}>
           <ul className="dropdown-menu profile-menu">
+            {smartistsUser.length !== 0 && (
+              <li>
+                <a
+                  href="# "
+                  onClick={(e) => {
+                    e.preventDefault();
+                    history.push(`/member/${profile.username}`);
+                  }}
+                >
+                  <PersonOutlinedIcon className="menu-icon" />
+                  <span>View Profile</span>
+                </a>
+              </li>
+            )}
+
             <li>
-              <a href="# ">
-                <PersonOutlinedIcon className="menu-icon" />
-                <span>View Profile</span>
-              </a>
-            </li>
-            <li>
-              <a href="# ">
-                <SettingsOutlinedIcon className="menu-icon" />
-                <span>Settings</span>
-              </a>
-            </li>
-            <li>
-              <a href="# ">
+              <a href="# "
+                  onClick={(e) => {
+                    e.preventDefault();
+                    history.push("/documentation");
+                  }}>
                 <DescriptionOutlinedIcon className="menu-icon" />
                 <span>Documentation</span>
               </a>

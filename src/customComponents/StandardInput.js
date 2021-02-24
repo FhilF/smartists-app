@@ -9,7 +9,7 @@ function StandardInput(props) {
     >
       <label className="input-label text-gray-600">{label}{required ? <span className="required">*</span>: null}</label>
       <input
-        className="standard-input base-input-text input-secondary mt-5"
+        className="standard-input base-input-text input-secondary mt-1"
         placeholder={placeholder}
         onChange={onChange}
         id={id}

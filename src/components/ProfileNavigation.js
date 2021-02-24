@@ -36,18 +36,18 @@ function ProfileNavigation(props) {
             <li
               className={classNames(
                 "profile-navigation-item-root",
-                history.location === `/profile/${smartistsUser.username}`
+                history.location === `/member/${smartistsUser.username}`
                   ? "profile-navigation-item-active"
                   : null
               )}
             >
               <a
                 className="profile-navigation-item"
-                href={`/profile/${smartistsUser.username}`}
+                href={`/member/${smartistsUser.username}`}
                 onClick={(e) => {
                   e.preventDefault();
                   history.push({
-                    pathname: `/profile/${smartistsUser.username}`,
+                    pathname: `/member/${smartistsUser.username}`,
                   });
                 }}
               >
@@ -62,18 +62,18 @@ function ProfileNavigation(props) {
             <li
               className={classNames(
                 "profile-navigation-item-root",
-                history.location === `/profile/${smartistsUser.username}/studio`
+                history.location === `/member/${smartistsUser.username}/studio`
                   ? "profile-navigation-item-active"
                   : null
               )}
             >
               <a
                 className="profile-navigation-item"
-                href={`/profile/${smartistsUser.username}/studio`}
+                href={`/member/${smartistsUser.username}/studio`}
                 onClick={(e) => {
                   e.preventDefault();
                   history.push({
-                    pathname: `/profile/${smartistsUser.username}/studio`,
+                    pathname: `/member/${smartistsUser.username}/studio`,
                   });
                 }}
               >

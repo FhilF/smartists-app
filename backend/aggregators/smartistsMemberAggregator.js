@@ -24,6 +24,10 @@ export const aggregateSmartistsMember = async (radiksData, query) => {
     match.$match.username = query.smartistsMember;
   }
 
+  if (query.isArtist) {
+    match.$match["isArtist.boolean"] = true;
+  }
+
   const sort = {
     $sort: { createdAt: -1 },
   };

@@ -45,15 +45,16 @@ function ArtistForm(props) {
   return (
     <div id="artist-form art-form-item">
       <div>
-        <h5 className="component-header" style={{ fontSize: "16px" }}>
-          Describe yourself as an <span className="text-secondary">Author</span> or <span className="text-secondary">Artist</span>
-        </h5>
+        <h4 className="text-lg font-semibold text-gray-800">
+          Describe yourself as an <span className="text-secondary">Author</span>{" "}
+          or <span className="text-secondary">Artist</span>
+        </h4>
       </div>
       <div id="artist-skills">
-        <p className="input-label mt-10 text-gray-600">
+        <p className="input-label mt-2 text-gray-600">
           What is/are your skills?<span className="required">*</span>
         </p>
-        <div className="checkbox-group mt-10">
+        <div className="checkbox-group mt-1">
           {artistSkills.map((skill, index) => {
             return (
               <div className="checkbox-root" key={index}>
@@ -69,7 +70,7 @@ function ArtistForm(props) {
                 />
                 <label
                   htmlFor={"skills" + index}
-                  className="p-paragraph text-gray-800"
+                  className="text-sm font-normal text-gray-800 ml-2"
                 >
                   {skill}
                 </label>
@@ -80,38 +81,32 @@ function ArtistForm(props) {
         </div>
       </div>
 
-      <div id="artist-demand">
-        <p className="input-label mt-10 text-gray-600">
-          Are you open to work on demand?<span className="required">*</span>
-        </p>
-        <div className="mt-10">
-          <input
-            type="radio"
-            id="workDemandYes"
-            name="workDemandOption"
-            value="Yes"
-            onChange={(e) => {
-              handleWorkDemand(e);
-            }}
-            disabled={formLoading}
-          />
-          <label htmlFor="workDemandYes" className="p-paragraph text-gray-800">
-            Yes
-          </label>
-          <input
-            type="radio"
-            id="workDemandNo"
-            name="workDemandOption"
-            value="No"
-            onChange={(e) => {
-              handleWorkDemand(e);
-            }}
-            disabled={formLoading}
-          />
-          <label htmlFor="workDemandNo" className="p-paragraph text-gray-800">
-            No
-          </label>
-        </div>
+      <div id="artist-demand" className="mt-2">
+        <input
+          type="checkbox"
+          id="term&agreements1"
+          name="term&agreements1"
+          checked={profile.isArtist.info.openWork}
+          onChange={(e) => {
+            setProfile({
+              ...profile,
+              isArtist: {
+                ...profile.isArtist,
+                info: {
+                  ...profile.isArtist.info,
+                  openWork: !profile.isArtist.info.openWork,
+                },
+              },
+            });
+          }}
+          disabled={formLoading}
+        />
+        <label
+          htmlFor="workDemandYes"
+          className="ml-2 input-label mt-4 text-gray-600"
+        >
+          Are you open to work on demand?
+        </label>
       </div>
     </div>
   );

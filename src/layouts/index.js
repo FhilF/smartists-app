@@ -3,13 +3,13 @@ import { useConnect } from "@blockstack/connect";
 
 import SuperUserRoutes from "../routes/SuperUser";
 import SmartistsUserRoutes from "../routes/SmartistsUser";
-
-import "../scss/global.scss";
-import "../scss/layout.scss";
-
 import NavProfileMenu from "../components/NavProfileMenu";
 
 import LandingPage from "../pages/LandingPage"
+
+import { useHistory } from "react-router-dom";
+
+import "../styles/scss/layout.scss"
 
 function Content(props) {
   const { userSession, smartistsUser, setSmartistsUser, signOut,isfetchingUser } = props;
@@ -21,6 +21,8 @@ function Content(props) {
     userSession.loadUserData().decentralizedID;
 
   const { doOpenAuth } = useConnect();
+  
+  const history = useHistory();
 
 
   useEffect(() => {
@@ -46,25 +48,27 @@ function Content(props) {
 
   return (
     <div>
-      <div className="navbar primary-bg">
+      <div className="navbar bg-primary">
         <div className="nav-content">
           <div className="nav-brand">
             <div className="logo-text">Smartists</div>
           </div>
-          <ul className="nav-menu-list">
+          <ul className="nav-menu-list text-gray-600 hover:text-gray-900">
             {userSession.isUserSignedIn() ? (
               <>
                 {smartistsUser ? (
                   <>
-                    <li className="nav-menu">
+                    {/* <li className="nav-menu">
                       <a href="# ">Menu</a>
-                    </li>
+                    </li> */}
                   </>
                 ) : null}
                 <NavProfileMenu
                   profile={profile}
                   signOut={signOut}
                   userSession={userSession}
+                  history={history}
+                  smartistsUser={smartistsUser}
                 />
               </>
             ) : (
@@ -96,16 +100,16 @@ function Content(props) {
         </div>
       </div>
 
-      <div className="content-body-root">
+      <div className="content-body-root mb-20">
         {!authenticated && <LandingPage/>}
         {decentralizedID && (
           <>
             {!isfetchingUser ? smartistsUser.length !== 0 ? (
-              <div className="content-body">
-                <SmartistsUserRoutes smartistsUser={smartistsUser} isfetchingUser={isfetchingUser} />
+              <div className="">
+                <SmartistsUserRoutes  setSmartistsUser={setSmartistsUser} smartistsUser={smartistsUser} isfetchingUser={isfetchingUser} />
               </div>
             ) : (
-              <div className="content-body">
+              <div className="">
                 <SuperUserRoutes setSmartistsUser={setSmartistsUser} />
               </div>
             ) : null}

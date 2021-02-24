@@ -20,8 +20,8 @@ function CreateUI(props) {
   return (
     <div>
       {dynamicInput.map((el, i) => (
-        <div key={i} style={{ display: "flex" }}>
-          <div className="col-md-8">
+        <div key={i} className="flex items-center">
+          <div className="w-3/4">
             <StandardInput
               className=""
               id="image-title"
@@ -35,12 +35,13 @@ function CreateUI(props) {
             />
           </div>
           <Button
+            className="mt-1"
             variant="contained"
-            className="mt-5 ml-10"
             onClick={(e) => {
               e.preventDefault();
               handleRemove();
             }}
+            disabled={formLoading}
           >
             Remove
           </Button>
@@ -72,7 +73,8 @@ function AddMultipleIsLookingFor(props) {
 
       <Button
         variant="contained"
-        className="mt-10"
+        className="mt-4"
+        disabled={formLoading}
         onClick={(e) => {
           e.preventDefault();
           AddInput();

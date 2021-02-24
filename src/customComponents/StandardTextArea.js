@@ -9,7 +9,7 @@ function StandardTextArea(props) {
     >
       <label className="text-area-label input-label text-gray-600">{label}{required ? <span className="required">*</span>: null}</label>
       <textarea
-        className="standard-text-area base-text-area text-area-secondary mt-5"
+        className="standard-text-area base-text-area text-area-secondary mt-1"
         type="text"
         placeholder={placeholder}
         onChange={onChange}

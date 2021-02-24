@@ -2,6 +2,8 @@ import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import WelcomePage from "../pages/Welcome";
 import SignUpPage from "../pages/SignUp";
+import NotFound from "../pages/NotFound";
+import Documentation from "../pages/Documentation";
 
 function SuperUserRoutes(props) {
   const {setSmartistsUser} = props;
@@ -20,6 +22,18 @@ function SuperUserRoutes(props) {
           Component
           render={(routeProps) => <SignUpPage {...routeProps} setSmartistsUser={setSmartistsUser}/>}
         />
+        <Route
+          exact
+          path="/documentation"
+          Component
+          render={(routeProps) => <Documentation {...routeProps}/>}
+        />
+        <Route
+          path="404"
+          render={(routeProps) => <NotFound {...routeProps} />}
+        />
+
+        <Route render={(routeProps) => <NotFound {...routeProps} />} />
         {/* <Route
           path="/profile/:username"
           Component

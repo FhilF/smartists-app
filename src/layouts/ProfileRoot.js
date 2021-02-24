@@ -3,9 +3,8 @@ import ProfileLayoutComponent from "./ProfileLayout";
 import { Route } from "react-router-dom";
 import StudioPage from "../pages/Studio";
 import ProfilePage from "../pages/Profile";
-import FeaturedPortfolioPage from "../pages/FeaturedPortfolio";
+import FeaturedPortfolioPage from "../pages/FeaturedArtwork";
 import FeaturedProjectPage from "../pages/FeaturedProject";
-import "../scss/profile.scss";
 import StudioModel from "../models/Studio";
 
 import StudioGatePage from "../pages/StudioGate";

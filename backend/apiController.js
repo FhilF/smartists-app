@@ -1,15 +1,9 @@
 import moment from "moment";
-import {
-  aggregateSmartistsMember
-} from "./aggregators/smartistsMemberAggregator";
-import {
-  aggregatePortfolio
-} from "./aggregators/portfolioAggregator";
-import {
-  aggregateProject
-} from "./aggregators/projectAggregator";
+import { aggregateSmartistsMember } from "./aggregators/smartistsMemberAggregator";
+import { aggregateFeaturedArtwork } from "./aggregators/featuredArtworkAggregator";
+import { aggregateProject } from "./aggregators/projectAggregator";
 import { smartistsMemberModifier } from "./modifier/smartistsMemberModifier";
-import { portfolioModifier } from "./modifier/portfolioModifier";
+import { featuredArtworkModifier } from "./modifier/featuredArtworkModifier";
 import { projectModifier } from "./modifier/projectModifier";
 
 const express = require("express");
@@ -26,10 +20,16 @@ const makeApiController = (db) => {
     res.json({ smartistsUser });
   });
 
-  Router.getAsync("/portfolio", async (req, res) => {
-    let portfolio = await aggregatePortfolio(radiksData, req.query);
-    portfolio = portfolioModifier(portfolio);
-    res.json({ portfolio });
+  Router.getAsync("/smartists-users", async (req, res) => {
+    let smartistsUsers = await aggregateSmartistsMember(radiksData, req.query);
+    smartistsUsers = smartistsMemberModifier(smartistsUsers);
+    res.json({ smartistsUsers });
+  });
+
+  Router.getAsync("/featured-artwork", async (req, res) => {
+    let featuredArtwork = await aggregateFeaturedArtwork(radiksData, req.query);
+    featuredArtwork = featuredArtworkModifier(featuredArtwork);
+    res.json({ featuredArtwork });
   });
 
   Router.getAsync("/project", async (req, res) => {

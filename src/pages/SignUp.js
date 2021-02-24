@@ -10,9 +10,6 @@ import ArtistForm from "../components/ArtistForm";
 import ArtUserForm from "../components/ArtUserForm";
 import TermsAndConfidentialityAgreements from "../components/TermsAndConfidentialityAgreements";
 
-import ContainedFunctionButton from "../customComponents/ContainedFunctionButton";
-import TextNavButton from "../customComponents/TextNavButton";
-import TextFunctionButton from "../customComponents/TextFunctionButton";
 import StandardInput from "../customComponents/StandardInput";
 import StandardTextArea from "../customComponents/StandardTextArea";
 import ButtonDropdown from "../customComponents/ButtonDropdown";
@@ -36,8 +33,6 @@ import imageCompression from "browser-image-compression";
 
 import { v4 as uuidv4 } from "uuid";
 
-import "../scss/signUp.scss";
-
 import mountainPlaceholder from "../assets/images/mountain-placeholder.jpg";
 
 function SignUp(props) {
@@ -45,7 +40,17 @@ function SignUp(props) {
   const { userSession } = useBlockstack();
   const [formLoading, setFormLoading] = useState(false);
   const [formRole, setFormRole] = useState("");
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState({
+    ag1: false,
+    ag2: false,
+    ag3: false,
+    ag4: false,
+    ag5: false,
+  });
+
+  useEffect(() => {
+    console.log(agreedToTerms);
+  }, [agreedToTerms]);
 
   const history = useHistory();
 
@@ -73,7 +78,7 @@ function SignUp(props) {
 
   const [profile, setProfile] = useState({
     name: null,
-    isArtist: { boolean: false, info: { skills: [], openWork: null } },
+    isArtist: { boolean: false, info: { skills: [], openWork: false } },
     isArtUser: {
       boolean: false,
       info: { majorInterest: null, primaryInterest: [] },
@@ -88,14 +93,6 @@ function SignUp(props) {
   const [tempImgUrls, setTempImgUrls] = useState();
 
   useEffect(() => {}, []);
-
-  useEffect(() => {
-    return () => {
-      if (tempImgUrls) {
-        window.URL.revokeObjectURL(tempImgUrls);
-      }
-    };
-  }, [tempImgUrls]);
 
   useEffect(() => {
     return () => {
@@ -133,6 +130,16 @@ function SignUp(props) {
     setFormLoading(true);
     const userData = userSession.loadUserData();
 
+    if (
+      !Object.keys(agreedToTerms).every(function (k) {
+        return agreedToTerms[k];
+      })
+    ) {
+      alert.error("You haven't agreed to all terms");
+      setFormLoading(false);
+      return true;
+    }
+
     if (formRole === "" || formRole === null) {
       handleRequiredDetails();
       return true;
@@ -158,14 +165,6 @@ function SignUp(props) {
         handleRequiredDetails();
         return true;
       }
-    }
-
-    if (!agreedToTerms) {
-      setFormLoading(false);
-      alert.error(
-        "You must agree to the Terms and confidentiality agreements!"
-      );
-      return true;
     }
 
     if (file) {
@@ -216,9 +215,9 @@ function SignUp(props) {
         .save()
         .then((result) => {
           alert.success("Successfully submitted your form!");
-          setSmartistsUser(result);
+          setSmartistsUser([result]);
           setFormLoading(false);
-          history.push("/");
+          history.push(`/member/${userData.username}`);
         })
         .catch((error) => {
           alert.error(
@@ -324,28 +323,27 @@ function SignUp(props) {
     }
   };
 
-
   return (
-    <div className="sign-up-root ">
-      <div className="sign-up card p-20 bb pb-40">
-        <div>
-          <h1 className="component-header text-gray-900">Account setup</h1>
-          <p className="component-header-paragraph text-gray-500 mt-5">
-            This is your introduction to the Smartists Community!
-          </p>
-        </div>
-        <div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-            className="form"
-          >
-            <div className="mt-20">
-              <div className="profile-image-root col-lg-8">
+    <div className="relative max-w-screen-lg xl:max-w-screen-xl mx-auto">
+      <div className="pt-8">
+        <h1 className="text-4xl text-gray-800">Account setup</h1>
+        <p className="text-sm font-semibold text-gray-400 mt-2">
+          This is your introduction to the Smartists Community!
+        </p>
+      </div>
+      <div className="lg:w-1/2 2xl:w-5/12">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          className="form"
+        >
+          <div className="mt-8">
+            <div className="flex justify-center">
+              <div className="w-28 h-28">
                 <input
-                  accept="image/*,video/*"
+                  accept="image/*"
                   style={{ display: "none" }}
                   id="raised-button-file"
                   type="file"
@@ -355,192 +353,179 @@ function SignUp(props) {
                   className="input-upload"
                   disabled={formLoading}
                 />
-                <label htmlFor="raised-button-file">
-                  <div style={{ position: "relative" }}>
+                <label htmlFor="raised-button-file" className="h-full">
+                  <div className="h-full w-full relative">
                     <div
                       style={{
                         backgroundImage: `url(${
                           tempImgUrls ? tempImgUrls : placeHolder
                         })`,
                       }}
-                      className="profile-display-picture"
+                      className="h-full w-full rounded-full bg-center bg-cover border-gray-400 border cursor-pointer"
                     ></div>
                   </div>
-                  {/* <img
-              src={tempImgUrls ? tempImgUrls : placeHolder}
-              alt="..."
-              style={{
-                borderRadius: "50%",
-                borderColor: "gray",
-                border: "3px solid ",
-                width: "100px",
-                height: "100px",
-                cursor: "pointer",
-              }}
-            /> */}
                 </label>
               </div>
-              <div className="col-lg-8">
-                <StandardInput
-                  className="mt-10"
-                  label="Name"
-                  id="name"
-                  value={profile.name ? profile.name : ""}
-                  onChange={(e) => {
-                    if (isEmptyStr(e.target.value)) {
-                      setProfile({ ...profile, name: null });
-                      return false;
-                    }
-                    setProfile({ ...profile, name: e.target.value });
-                  }}
-                  autoComplete="off"
-                  disabled={formLoading}
-                />
-                <StandardInput
-                  className="mt-10"
-                  label="Website URL"
-                  id="website-url"
-                  value={profile.websiteUrl ? profile.websiteUrl : ""}
-                  onChange={(e) => {
-                    if (isEmptyStr(e.target.value)) {
-                      setProfile({ ...profile, websiteUrl: null });
-                      return false;
-                    }
-                    setProfile({ ...profile, websiteUrl: e.target.value });
-                  }}
-                  autoComplete="off"
-                  disabled={formLoading}
-                />
-
-                <StandardInput
-                  className="mt-10"
-                  label="Email"
-                  id="email"
-                  type="email"
-                  rows={4}
-                  value={profile.email ? profile.email : ""}
-                  onChange={(e) => {
-                    if (isEmptyStr(e.target.value)) {
-                      setProfile({ ...profile, email: null });
-                      return false;
-                    }
-                    setProfile({ ...profile, email: e.target.value });
-                  }}
-                  autoComplete="off"
-                  disabled={formLoading}
-                />
-              </div>
-              <div className="mt-10">
-                <div className="input-label">
-                  <RoleLabel />
-                </div>
-                <div className="col-lg-6">
-                  <ButtonDropdown
-                    label={false}
-                    id="role"
-                    value={formRole}
-                    onChange={(e) => {
-                      handleDropDown(e);
-                    }}
-                    required
-                    disabled={formLoading}
-                  >
-                    <option value="">Choose a role</option>
-                    <option value="Artist">Artist</option>
-                    <option value="Art-user">Art-user</option>
-                    <option value="Artist & Art-user">Artist & Art-user</option>
-                  </ButtonDropdown>
-                </div>
-
-                <div
-                  className={
-                    profile.isArtist.boolean === true ||
-                    profile.isArtUser.boolean === true
-                      ? "mt-20"
-                      : null
-                  }
-                >
-                  <div className="art-form">
-                    {profile.isArtist.boolean === true ? (
-                      <ArtistForm
-                        profile={profile}
-                        setProfile={setProfile}
-                        formLoading={formLoading}
-                      />
-                    ) : null}
-
-                    {profile.isArtUser.boolean === true ? (
-                      <ArtUserForm
-                        profile={profile}
-                        setProfile={setProfile}
-                        formLoading={formLoading}
-                      />
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-              <StandardTextArea
-                className="col-lg-8 mt-10"
-                label="Describe yourself"
-                id="description"
-                rows={4}
-                value={profile.description ? profile.description : ""}
+            </div>
+            <div className="mt-4">
+              <StandardInput
+                className="mt-2"
+                label="Name"
+                id="name"
+                value={profile.name ? profile.name : ""}
                 onChange={(e) => {
                   if (isEmptyStr(e.target.value)) {
-                    setProfile({ ...profile, description: null });
+                    setProfile({ ...profile, name: null });
                     return false;
                   }
-                  setProfile({ ...profile, description: e.target.value });
+                  setProfile({ ...profile, name: e.target.value });
                 }}
+                autoComplete="off"
                 disabled={formLoading}
               />
-              <div className="mt-30">
-                <p style={{ fontWeight: "600", fontSize: "12px" }}>
-                  We value Confidentiality and Intellectual Property!
-                </p>
-                <p style={{ fontSize: "12px" }} className="text-gray-500">
-                  Your communications on Smartists are private and secure thanks
-                  to blockchain technology, but they are also legally protected
-                  once you sign the following Confidentiality Agreement.
-                </p>
+              <StandardInput
+                className="mt-2"
+                label="Website URL"
+                id="website-url"
+                value={profile.websiteUrl ? profile.websiteUrl : ""}
+                onChange={(e) => {
+                  if (isEmptyStr(e.target.value)) {
+                    setProfile({ ...profile, websiteUrl: null });
+                    return false;
+                  }
+                  setProfile({ ...profile, websiteUrl: e.target.value });
+                }}
+                autoComplete="off"
+                disabled={formLoading}
+              />
+
+              <StandardInput
+                className="mt-2"
+                label="Email"
+                id="email"
+                type="email"
+                rows={4}
+                value={profile.email ? profile.email : ""}
+                onChange={(e) => {
+                  if (isEmptyStr(e.target.value)) {
+                    setProfile({ ...profile, email: null });
+                    return false;
+                  }
+                  setProfile({ ...profile, email: e.target.value });
+                }}
+                autoComplete="off"
+                disabled={formLoading}
+              />
+            </div>
+            <div className="mt-2">
+              <div className="input-label">
+                <RoleLabel />
               </div>
-              <TermsAndConfidentialityAgreements
-                agreedToTerms={agreedToTerms}
-                setAgreedToTerms={setAgreedToTerms}
-                disabled={formLoading}
-              />
-              <div className="action-container mt-40">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    // handleModal();
+              <div className="col-lg-6">
+                <ButtonDropdown
+                  label={false}
+                  id="role"
+                  value={formRole}
+                  onChange={(e) => {
+                    handleDropDown(e);
                   }}
+                  required
+                  disabled={formLoading}
                 >
-                  Cancel
-                </Button>{" "}
-                <div style={{ position: "relative" }}>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    type="submit"
-                    disabled={formLoading}
-                  >
-                    {formLoading ? <>Submitting...</> : <>Submit</>}
-                  </Button>
-                  {formLoading && (
-                    <Loader
-                      className="btn-loader"
-                      type="Oval"
-                      color="#00BFFF"
-                      height={25}
-                      width={25}
+                  <option value="">Choose a role</option>
+                  <option value="Artist">Artist</option>
+                  <option value="Art-user">Art-user</option>
+                  <option value="Artist & Art-user">Artist & Art-user</option>
+                </ButtonDropdown>
+              </div>
+
+              <div
+                className={
+                  profile.isArtist.boolean === true ||
+                  profile.isArtUser.boolean === true
+                    ? "mt-4"
+                    : null
+                }
+              >
+                <div className="art-form">
+                  {profile.isArtist.boolean === true ? (
+                    <ArtistForm
+                      profile={profile}
+                      setProfile={setProfile}
+                      formLoading={formLoading}
                     />
-                  )}
+                  ) : null}
+
+                  {profile.isArtist.boolean === true &&
+                    profile.isArtUser.boolean === true && (
+                      <div className="mt-8"></div>
+                    )}
+
+                  {profile.isArtUser.boolean === true ? (
+                    <ArtUserForm
+                      profile={profile}
+                      setProfile={setProfile}
+                      formLoading={formLoading}
+                    />
+                  ) : null}
                 </div>
               </div>
             </div>
-          </form>
-        </div>
+            <StandardTextArea
+              className="col-lg-8 mt-2"
+              label="Describe yourself"
+              id="description"
+              rows={4}
+              value={profile.description ? profile.description : ""}
+              onChange={(e) => {
+                if (isEmptyStr(e.target.value)) {
+                  setProfile({ ...profile, description: null });
+                  return false;
+                }
+                setProfile({ ...profile, description: e.target.value });
+              }}
+              disabled={formLoading}
+            />
+            <div className="mt-30">
+              <p style={{ fontWeight: "600", fontSize: "12px" }}>
+                We value Confidentiality and Intellectual Property!
+              </p>
+              <p style={{ fontSize: "12px" }} className="text-gray-500">
+                Your communications on Smartists are private and secure thanks
+                to blockchain technology, but they are also legally protected
+                once you sign the following Confidentiality Agreement.
+              </p>
+            </div>
+            <TermsAndConfidentialityAgreements
+              agreedToTerms={agreedToTerms}
+              setAgreedToTerms={setAgreedToTerms}
+              disabled={formLoading}
+              alert={alert}
+            />
+            <div className="mt-8 flex justify-end">
+              <Button link={"/"}>Cancel</Button>{" "}
+              <div style={{ position: "relative" }}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  type="submit"
+                  disabled={formLoading}
+                >
+                  {formLoading ? <>Submitting...</> : <>Submit</>}
+                </Button>
+                {formLoading && (
+                  <Loader
+                    className="btn-loader"
+                    type="Oval"
+                    color="#00BFFF"
+                    height={25}
+                    width={25}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );

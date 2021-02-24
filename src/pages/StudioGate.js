@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 
 import Button from "../customComponents/Button";
 
-import "../scss/studio-gate.scss";
 import StudioModel from "../models/Studio";
 import { useBlockstack } from "react-blockstack";
 import LoadingBar from "../components/LoadingBar"
@@ -58,7 +57,8 @@ function StudioGate(props) {
   };
 
   return (
-    <div className="studio-gate-root">
+    <div className="relative max-w-screen-lg xl:max-w-screen-xl mx-auto">
+    <div className="flex justify-center">
       <LoadingBar loadingProgress={loadingProgress} setLoadingProgress={loadingProgress}/>
       <div className="studio-gate card p-20 pb-40">
         <div className="flex-column-center">
@@ -89,6 +89,7 @@ function StudioGate(props) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

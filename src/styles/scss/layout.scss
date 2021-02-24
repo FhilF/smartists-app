@@ -1,0 +1,122 @@
+@import "/variables/_breakpoints.scss";
+@import "/variables/_palette.scss";
+.navbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #f3eee5;
+
+  .nav-brand {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    height: inherit;
+
+    .logo-text {
+      font-family: "Nunito", sans-serif;
+      font-weight: 600;
+      font-size: 26px;
+      height: inherit;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .nav-content {
+    .nav-menu-list {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      height: inherit;
+      font-size: .875rem;
+      font-weight: 500;
+
+      .nav-menu {
+        position: relative;
+        height: inherit;
+        &:hover {
+          background: #e2e2e2;
+        }
+        a {
+          height: inherit;
+          display: flex;
+          align-items: center;
+          padding-left: 15px;
+          padding-right: 15px;
+          color: inherit;
+          text-decoration: none;
+        }
+      }
+
+      .menu-profile {
+        a {
+          height: inherit;
+          .profile-avatar-image {
+            border-radius: 50%;
+            height: 40px;
+          }
+          .profile-text {
+            margin-left: 5px;
+          }
+        }
+        .profile-menu {
+          margin-top: 5px;
+          width: 250px;
+
+          li {
+            &:hover {
+              background: $primary;
+            }
+            a {
+              font-size: 1.1em;
+              font-weight: 400;
+              padding: 15px;
+
+              .menu-icon {
+                height: 21px;
+                fill: #e6be7a;
+                // fill: #5b7083;
+                margin-right: 10px;
+              }
+            }
+          }
+        }
+      }
+
+      .active-dropdown {
+        &:hover {
+          background: none;
+        }
+      }
+    }
+  }
+
+  @media (min-width: $xl) {
+    display: flex;
+    justify-content: center;
+    height: 60px;
+    align-items: center;
+    .nav-content {
+      width: $xl;
+      display: flex;
+      height: inherit;
+    }
+  }
+
+  @media (min-width: $xl) {
+    .nav-content {
+      width: $xl;
+    }
+  }
+}
+
+.content-body-root {
+  margin-top: 60px;
+  .content-body {
+    display: flex;
+    justify-content: center;
+  }
+}

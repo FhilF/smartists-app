@@ -4,7 +4,16 @@ import { useHistory } from "react-router-dom";
 import Ripple from "./js/Ripple";
 
 function IconButton(props) {
-  const { children, className, onClick, size, color, label, type } = props;
+  const {
+    children,
+    className,
+    onClick,
+    size,
+    color,
+    label,
+    type,
+    disabled,
+  } = props;
 
   function handleButtonSize(size) {
     if (size === "small") {
@@ -21,10 +30,10 @@ function IconButton(props) {
         rippleColor: "rgba(0, 0, 0, 0.14)",
       };
     } else if (color === "secondary") {
-        return {
-            btnColor: "btn-svg-secondary",
-            rippleColor: "rgba(0, 0, 0, 0.14)",
-          };
+      return {
+        btnColor: "btn-svg-secondary",
+        rippleColor: "rgba(0, 0, 0, 0.14)",
+      };
     } else {
       return "btn-icon-standard";
     }
@@ -35,13 +44,15 @@ function IconButton(props) {
         "btn btn-icon btn-ripple",
         className,
         handleButtonSize(size),
-        handleColor(color).btnColor
+        handleColor(color).btnColor,
+        disabled ? "btn-disabled-svg" : null
       )}
       type={type ? type : "button"}
       onClick={onClick}
+      disabled={disabled}
     >
       {children ? children : label}
-      <Ripple color={handleColor(color).rippleColor} />
+      {!disabled && <Ripple color={handleColor(color).rippleColor} />}
     </button>
   );
 }

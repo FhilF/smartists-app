@@ -2,13 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
-import "./scss/index-site.scss";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
 import ReactBlockstack from "react-blockstack";
 
 import { appConfig, finished } from "./UserSession.js";
+
+import "./styles/tailwind.css";
+
+import "./styles/scss/global.scss";
 
 import { Provider } from "react-redux";
 import store from "./utils/store";
@@ -21,6 +24,7 @@ import { ReactComponent as WarningOutlinedIcon } from "./assets/svg-icon/ReportP
 import { ReactComponent as InfoOutlinedIcon } from "./assets/svg-icon/InfoOutlinedIcon.svg";
 import { ReactComponent as CloseIcon } from "./assets/svg-icon/CloseIcon.svg";
 // import AlertTemplate from "react-alert-template-basic";
+import { MdCheckCircle, MdError, MdInfo, MdClose } from "react-icons/md";
 
 const options = {
   // you can also just use 'bottom center'
@@ -29,36 +33,38 @@ const options = {
   // you can also just use 'scale'
   transition: transitions.FADE,
   containerStyle: {
-    zIndex: 2000
-  }
+    zIndex: 2000,
+  },
 };
 
 const AlertTemplate = ({ style, options, message, close }) => (
   <div
     className={classNames(
-      "snackbar",
-      options.type === "info" && "info-snackbar",
-      "snackbar",
-      options.type === "success" && "success-snackbar",
-      "snackbar",
-      options.type === "error" && "error-snackbar",
-      "snackbar",
+      "py-4 px-4 rounded-md",
+      options.type === "info" && "bg-blue-400",
+      options.type === "success" && "snackbar-success",
+      options.type === "error" && "bg-red-500",
       options.type === "warning" && "warning-snackbar"
     )}
     style={style}
   >
-    <div className="snackbar-container">
-      {options.type === "info" && (
-        <InfoOutlinedIcon className="snackbar-icon snackbar-logo" />
-      )}
-      {options.type === "success" && (
-        <SuccessOutlinedIcon className="snackbar-icon snackbar-logo" />
-      )}
-      {options.type === "error" && (
-        <ErrorOutlinedIcon className="snackbar-icon snackbar-logo" />
-      )}
-      <span className="snackbar-message">{message}</span>
-      <CloseIcon className="snackbar-icon btn snackbar-close" onClick={close} />
+    <div
+      className="flex items-center text-gray-100 text-xl
+    "
+    >
+      <div className="flex-grow flex items-center">
+        <div>
+          {options.type === "info" && <MdInfo className="snackbar-icon" />}
+          {options.type === "success" && (
+            <MdCheckCircle className="snackbar-icon" />
+          )}
+          {options.type === "error" && <MdError className="snackbar-icon" />}
+        </div>
+        <span className="px-2 snackbar-message">{message}</span>
+      </div>
+      <div>
+        <MdClose className="snackbar-icon cursor-pointer" onClick={close} />
+      </div>
     </div>
   </div>
 );

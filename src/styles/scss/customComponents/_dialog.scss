@@ -1,0 +1,56 @@
+.dialog-root {
+  // position: fixed;
+  // inset: 0px;
+  .dialog-backdrop {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    z-index: 1300;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .dialog-container {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+    z-index: 1301;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    .dialog-paper {
+      background-color: #fff;
+      margin: auto;
+
+      &.dialog-modal {
+        box-shadow: 0 2px 4px 0 #9e9e9e;
+        border-radius: 10px;
+      }
+
+      .dialog-content {
+        padding: 20px;
+        .dialog-header {
+        }
+        .dialog-body {
+        }
+
+        .dialog-footer {
+          display: flex;
+          justify-content: flex-end;
+        }
+      }
+
+      .dialog-action {
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+  }
+}

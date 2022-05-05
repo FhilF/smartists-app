@@ -1,0 +1,102 @@
+@import "../variables/_palette.scss";
+
+.content-header {
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.page-header-paragraph {
+  color: $secondary;
+  font-weight: 400;
+}
+
+.input-label {
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.paragraph-header {
+  font-weight: 600;
+}
+
+.paragraph {
+  font-size: 14px;
+}
+
+.paragraph-list {
+  padding-inline-start: 30px;
+  .paragraph-list-item {
+    margin-top: 5px;
+    font-size: 14px;
+  }
+}
+
+.component-header {
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 1.5rem;
+}
+
+.component-header-paragraph {
+  font-size: 0.9rem;
+  line-height: 1.2rem;
+  font-weight: 600;
+}
+
+.page-header {
+  font-weight: 700;
+  font-size: 2rem;
+  color: $secondary;
+}
+
+.p-header-text {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.p-text {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.4rem;
+}
+
+.p-text-bold {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.4rem;
+}
+
+.p-paragraph {
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.4rem;
+}
+
+.p-paragraph-bold {
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.4rem;
+}
+
+.p-subtext {
+  font-weight: 400;
+  font-size: 0.7rem;
+  line-height: 1rem;
+}
+
+.text-secondary {
+  color: $secondary;
+}
+
+.text-gray-900 {
+  color: $gray-900;
+}
+.text-gray-800 {
+  color: $gray-800;
+}
+
+
+.text-gray-500 {
+  color: $gray-500;
+}

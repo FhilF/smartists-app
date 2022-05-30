@@ -47,7 +47,7 @@ export default function SmartistsMemberCard(props) {
                   : "Artist"
                 : "Art-user"}
             </p>
-            <p className="text-lg font-semibold leading-7 text-gray-900 line-clamp-1">
+            <p className="text-lg font-semibold leading-7 text-gray-900">
               {!isNil(smartistsMember.name)
                 ? smartistsMember.name
                 : "Anonymous Person"}
@@ -97,13 +97,13 @@ export default function SmartistsMemberCard(props) {
             <div className="inline-flex space-x-9 items-center justify-between w-full">
               <div className="flex space-x-1.5 items-center justify-start">
                 {smartistsMember.classification?.isArtist?.info.openWork && (
-                  <p className="text-xs leading-3 text-gray-500 line-clamp-1">
+                  <p className="text-xs leading-3 text-gray-500">
                     <CheckIcon style={{ display: "inline-block" }} /> Open to
                     work on demand
                   </p>
                 )}
               </div>
-              <Button
+              {/* <Button
                 size="medium"
                 variant="outlined"
                 color="secondary"
@@ -128,8 +128,32 @@ export default function SmartistsMemberCard(props) {
                   );
                 }}
               >
-                <span className="line-clamp-1">Visit</span>
-              </Button>
+                <span className="">Visit</span>
+              </Button> */}
+              <button
+                className={`rounded-2xl ${
+                  !smartistsMember.classification?.isArtist?.info.openWork
+                    ? " self-end justify-self-end place-self-end "
+                    : ""
+                }`}
+                style={{ borderRadius: "20px" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(
+                    `/${
+                      smartistsMember[
+                        isMainnet ? "walletAddress" : "walletAddressTestnet"
+                      ]
+                    }/${
+                      smartistsMember.classification?.isArtist?.isTrue
+                        ? "studio"
+                        : "nft"
+                    }`
+                  );
+                }}
+              >
+                Visit
+              </button>
             </div>
           )}
         </div>

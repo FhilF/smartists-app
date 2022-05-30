@@ -139,7 +139,7 @@ function Dashboard(props) {
             uploadImageOptions
           );
           const res = await addFileToStorage(
-            "smartists/CoverImage",
+            { dir: "smartists/CoverImage" },
             compressedImage,
             {
               encrypt: false,

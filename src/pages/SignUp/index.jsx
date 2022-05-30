@@ -167,7 +167,7 @@ function SignUp(props) {
       })
         .then(
           (image) => {
-            return addFileToStorage("smartists/displayPicture", image, {
+            return addFileToStorage({dir: "smartists/displayPicture"}, image, {
               encrypt: false,
             });
           },

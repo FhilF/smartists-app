@@ -17,6 +17,11 @@ import { addFileToStorage } from "utils/stacks-util/storage";
 import { sha256, sha224 } from "js-sha256";
 
 import {
+  publicKeyToAddress,
+  getPublicKeyFromPrivate,
+} from "@stacks/encryption";
+
+import {
   uintCV,
   intCV,
   bufferCV,
@@ -59,7 +64,7 @@ function Mint() {
   const alert = useAlert();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [level, setLevel] = useState(0);
+  const [level, setLevel] = useState(1);
   const [formLoading, setFormLoading] = useState(false);
   const [media, setMedia] = useState(null);
   const [previewMedia, setPreviewMedia] = useState(null);
@@ -137,20 +142,21 @@ function Mint() {
         formData.append("mediaFile", compressedMedia);
         const rawMediaHash = await getFileSHA256(media);
         const compressedMediaHash = await getFileSHA256(compressedMedia);
-        const rawFileUpload = await addFileToStorage("smartists/nft", media, {
-          encrypt: true,
-        });
-
-        const authorCopy = await addFileToStorage("smartists/nft", media, {
-          encrypt: true,
-        });
+        const fileUpload = await Promise.all([
+          addFileToStorage({ dir: "smartists/nft" }, media, {
+            encrypt: true,
+          }),
+          addFileToStorage({ dir: "smartists/nft" }, media, {
+            encrypt: true,
+          }),
+        ]);
 
         metadata = {
           ...metadata,
           file_mime_type: compressedMedia.type,
           file_hash: rawMediaHash,
-          file_name: rawFileUpload.fileName,
-          file_author_copy: authorCopy.filename,
+          file_name_author_copy: fileUpload[0].fileName,
+          file_name_owner_copy: fileUpload[1].fileName,
           image_hash: compressedMediaHash,
           image: null,
           author_address:
@@ -163,6 +169,7 @@ function Mint() {
           formData,
           config
         );
+
         setSavedData({ ipfsHash: uploadIPFS.data.ipfsData.IpfsHash, level });
         setFormLoading(false);
 
@@ -171,7 +178,7 @@ function Mint() {
           contractName: "genuine-v1",
           functionName: "create-genuine",
           functionArgs: [
-            level === 0 ? noneCV() : someCV(uintCV(level)),
+            uintCV(level),
             stringAsciiCV(`ipfs://${uploadIPFS.data.ipfsData.IpfsHash}`),
           ],
           network,
@@ -204,7 +211,7 @@ function Mint() {
           contractName: "genuine-v1",
           functionName: "create-genuine",
           functionArgs: [
-            level === 0 ? noneCV() : someCV(uintCV(savedData.level)),
+            uintCV(savedData.level),
             stringAsciiCV(`ipfs://${savedData.ipfsHash}`),
           ],
           network,
@@ -363,9 +370,6 @@ function Mint() {
                           setLevel(parseInt(e.target.value));
                         }}
                       >
-                        <option value={0}>
-                          No license - All rights reserved
-                        </option>
                         <option value={1}>Level: 1 - Display</option>
                         <option value={2}>Level: 2 - Display + Copy</option>
                         <option value={3}>

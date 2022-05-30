@@ -2,9 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 
-import IconButton from "customComponents/IconButton";
-import { MdKeyboardBackspace } from "react-icons/md";
+import StxIcon from "assets/images/stx-icon.png";
+import {
+  BsPlusSquare,
+  BsGift,
+  BsKey,
+  BsDownload,
+  BsCheckSquare,
+  BsPencilSquare,
+  BsXSquare,
+} from "react-icons/bs";
+import { IoSyncOutline, IoRocketOutline } from "react-icons/io5";
 import Grid from "customComponents/Grid";
+
 import {
   smartContractsApi,
   nonFungibleTokensApi,
@@ -13,6 +23,10 @@ import {
   isMainnet,
   assetIdentifiers,
   StacksNetwork,
+  StacksApiUriWs,
+  StacksExplorer,
+  isMocknet,
+  transactionApi,
 } from "config";
 
 import {
@@ -27,13 +41,16 @@ import {
   createAssetInfo,
   makeStandardSTXPostCondition,
   FungibleConditionCode,
+  makeContractNonFungiblePostCondition,
 } from "@stacks/transactions";
+import { connectWebSocketClient } from "@stacks/blockchain-api-client";
+import { sha256, sha224 } from "js-sha256";
 
 import axios from "axios";
 
 import { ReadOnlyFunctionArgsFromJSON } from "@stacks/blockchain-api-client";
 
-import { isEmpty, isInteger } from "lodash";
+import { has, isEmpty, isInteger, set } from "lodash";
 import { userSession } from "utils/stacks-util/auth";
 import ListModal from "./ListModal";
 import WaitTransaction from "components/WaitTransaction";
@@ -41,9 +58,20 @@ import WaitTransaction from "components/WaitTransaction";
 import { openContractCall } from "@stacks/connect";
 import { appDetails } from "utils/stacks-util/auth";
 import { useAlert } from "react-alert";
-import { getPublicKeyFromPrivate } from "@stacks/encryption";
-import { StacksExplorer } from "config";
-import { isMocknet } from "config";
+import {
+  getPublicKeyFromPrivate,
+  publicKeyToAddress,
+  decryptContent,
+} from "@stacks/encryption";
+import { StacksApiUrl } from "config";
+import { Oval } from "react-loader-spinner";
+import classNames from "classnames";
+import { apiServer } from "config";
+import {
+  addFileToStorage,
+  getFileFromStorage,
+} from "utils/stacks-util/storage";
+
 const BigNum = require("bn.js");
 
 function View(props) {
@@ -66,6 +94,11 @@ function View(props) {
   const walletAddress =
     userData.profile.stxAddress[isMainnet ? "mainnet" : "testnet"];
   const [pendingSaleDetails, setPendingSaleDetails] = useState(null);
+  const [isListingPendingTx, setIsListingPendingTx] = useState(false);
+  const [isUnlistingPendingTx, setIsUnlistingPendingTx] = useState(false);
+  const [isBuyingPendingTx, setIsBuyingPendingTx] = useState(false);
+  const [isReleasingPendingTx, setIsReleasingPendingTx] = useState(false);
+  const [pendingTx, setPendingTx] = useState();
 
   useEffect(() => {
     if (assetIdentifiers.some((v) => v.includes(assetContractName))) {
@@ -83,34 +116,298 @@ function View(props) {
       metadata.owner === `${smartistsContractAddress}.${assetContractName}`
     ) {
       getPendingSaleDetails();
+      return true;
+    }
+
+    if (
+      metadata &&
+      metadata.listingDetails === "none" &&
+      walletAddress === metadata.owner
+    ) {
+      getPendingListTx(
+        "list-in-ustx",
+        setIsListingPendingTx,
+        updateListingDetails
+      );
+      return true;
+    }
+
+    if (
+      metadata &&
+      walletAddress === metadata.owner &&
+      typeof metadata.listingDetails === "object"
+    ) {
+      getPendingUnlistAndUpdateTx();
+      return true;
+    }
+
+    if (
+      metadata &&
+      walletAddress !== metadata.owner &&
+      typeof metadata.listingDetails === "object"
+    ) {
+      getPendingListTx(
+        "buy-in-ustx",
+        setIsBuyingPendingTx,
+        updatePendingSaleDetails
+      );
+      return true;
     }
   }, [metadata]);
 
-  const getPendingSaleDetails = async () => {
-    const pendingSaleDetails = await smartContractsApi.callReadOnlyFunction({
+  useEffect(() => {
+    if (pendingSaleDetails && walletAddress === pendingSaleDetails.owner) {
+      getPendingListTx(
+        "release-genuine",
+        setIsReleasingPendingTx,
+        updateListingDetails
+      );
+    }
+  }, [pendingSaleDetails]);
+
+  const updateListingDetails = async () => {
+    const listingDetails = await smartContractsApi.callReadOnlyFunction({
       contractAddress: smartistsContractAddress,
       contractName: assetContractName,
-      functionName: "get-pending-sale-details",
+      functionName: "get-listing-details",
       readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
         sender: walletAddress,
         arguments: [cvToHex(uintCV(id))],
       }),
     });
 
-    let pendingSaleCv = deserializeCV(
-      Buffer.from(pendingSaleDetails.result.substr(2), "hex")
+    let listingCv = deserializeCV(
+      Buffer.from(listingDetails.result.substr(2), "hex")
     );
 
-    const pendingSail = pendingSaleCv.value.value
-      ? {
-          newOwner: cvToString(pendingSaleCv.value.value.data["new-owner"]),
-          owner: cvToString(pendingSaleCv.value.value.data.owner),
-          price: cvToString(pendingSaleCv.value.value.data.price).substr(1),
-          publicKey: cvToString(pendingSaleCv.value.value.data["public-key"]),
-        }
-      : cvToString(pendingSaleCv.value);
+    const listing =
+      "value" in listingCv
+        ? {
+            owner: cvToString(listingCv.value.data.owner),
+            price: cvToString(listingCv.value.data.price).substr(1),
+          }
+        : cvToString(listingCv);
+    setMetadata({ ...metadata, listingDetails: listing });
+  };
 
-    setPendingSaleDetails(pendingSail);
+  const getPendingSaleDetails = async () => {
+    try {
+      const pendingSaleDetails = await smartContractsApi.callReadOnlyFunction({
+        contractAddress: smartistsContractAddress,
+        contractName: assetContractName,
+        functionName: "get-pending-sale-details",
+        readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
+          sender: walletAddress,
+          arguments: [cvToHex(uintCV(id))],
+        }),
+      });
+
+      let pendingSaleCv = deserializeCV(
+        Buffer.from(pendingSaleDetails.result.substr(2), "hex")
+      );
+
+      const pendingSale = pendingSaleCv.value
+        ? {
+            newOwner: cvToString(pendingSaleCv.value.data["new-owner"]),
+            owner: cvToString(pendingSaleCv.value.data.owner),
+            price: cvToString(pendingSaleCv.value.data.price).substr(1),
+          }
+        : cvToString(pendingSaleCv);
+
+      setPendingSaleDetails(pendingSale);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updatePendingSaleDetails = async () => {
+    try {
+      const listingDetails = await smartContractsApi.callReadOnlyFunction({
+        contractAddress: smartistsContractAddress,
+        contractName: assetContractName,
+        functionName: "get-listing-details",
+        readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
+          sender: walletAddress,
+          arguments: [cvToHex(uintCV(id))],
+        }),
+      });
+
+      const pendingSaleDetails = await smartContractsApi.callReadOnlyFunction({
+        contractAddress: smartistsContractAddress,
+        contractName: assetContractName,
+        functionName: "get-pending-sale-details",
+        readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
+          sender: walletAddress,
+          arguments: [cvToHex(uintCV(id))],
+        }),
+      });
+
+      const ownerDetails = await smartContractsApi.callReadOnlyFunction({
+        contractAddress: smartistsContractAddress,
+        contractName: assetContractName,
+        functionName: "get-owner",
+        readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
+          sender: walletAddress,
+          arguments: [cvToHex(uintCV(id))],
+        }),
+      });
+
+      const ownerCv = deserializeCV(
+        Buffer.from(ownerDetails.result.substr(2), "hex")
+      );
+
+      let listingCv = deserializeCV(
+        Buffer.from(listingDetails.result.substr(2), "hex")
+      );
+
+      const listing =
+        "value" in listingCv
+          ? {
+              owner: cvToString(listingCv.value.data.owner),
+              price: cvToString(listingCv.value.data.price).substr(1),
+            }
+          : cvToString(listingCv);
+
+      let pendingSaleCv = deserializeCV(
+        Buffer.from(pendingSaleDetails.result.substr(2), "hex")
+      );
+
+      const pendingSale = pendingSaleCv.value
+        ? {
+            newOwner: cvToString(pendingSaleCv.value.data["new-owner"]),
+            owner: cvToString(pendingSaleCv.value.data.owner),
+            price: cvToString(pendingSaleCv.value.data.price).substr(1),
+          }
+        : cvToString(pendingSaleCv);
+
+      setMetadata({
+        ...metadata,
+        listingDetails: listing,
+        owner: cvToString(ownerCv.value.value),
+      });
+
+      setPendingSaleDetails(pendingSale);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getMempoolTx = async () => {
+    return await transactionApi.getMempoolTransactionList({
+      address: `${smartistsContractAddress}.${assetContractName}`,
+    });
+  };
+
+  const poll = async function (fn, fnCondition, setState, ms) {
+    let result = await fn();
+    setState(true);
+    while (fnCondition(result)) {
+      await wait(ms);
+      result = await fn();
+    }
+    return result;
+  };
+
+  const wait = function (ms = 5000) {
+    console.log("getting transaction");
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  };
+
+  async function trackTransaction(txId, setState, updateFunction) {
+    try {
+      let fetchReport = () =>
+        axios.get(`${StacksApiUrl}/extended/v1/tx/${txId}`);
+      let validate = (result) => result.data.tx_status === "pending";
+      let response = await poll(fetchReport, validate, setState, 5000);
+      setState(false);
+      if (updateFunction) {
+        await updateFunction();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const getPendingListTx = async (functionName, setState, updateFunction) => {
+    try {
+      const pendingTx = await getMempoolTx();
+      const filteredTx = pendingTx.results.filter(
+        (tx) =>
+          tx.tx_status === "pending" &&
+          tx.sender_address === walletAddress &&
+          tx.contract_call.function_args !== null &&
+          tx.contract_call.function_args.length > 0 &&
+          tx.contract_call.function_args[0].name === "genuine-id" &&
+          tx.contract_call.function_args[0].repr === cvToString(uintCV(id)) &&
+          tx.contract_call.function_name === functionName
+      );
+
+      if (filteredTx.length > 0) {
+        trackTransaction(filteredTx[0].tx_id, setState, updateFunction);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPendingUnlistAndUpdateTx = async () => {
+    try {
+      const pendingTx = await getMempoolTx();
+      const filteredTx = pendingTx.results.filter(
+        (tx) =>
+          (tx.tx_status === "pending" &&
+            tx.sender_address === walletAddress &&
+            tx.contract_call.function_args !== null &&
+            tx.contract_call.function_args.length > 0 &&
+            tx.contract_call.function_args[0].name === "genuine-id" &&
+            tx.contract_call.function_args[0].repr === cvToString(uintCV(id)) &&
+            tx.contract_call.function_name === "unlist-in-ustx") ||
+          tx.contract_call.function_name === "list-in-ustx"
+      );
+
+      console.log(filteredTx);
+
+      if (filteredTx.length > 0) {
+        const firstTx = filteredTx.reduce(function (prev, curr) {
+          return prev.nonce < curr.nonce ? prev : curr;
+        });
+
+        const unlistTx = filteredTx.filter(
+          (tx) => tx.contract_call.function_name === "unlist-in-ustx"
+        );
+        const listTx = filteredTx.filter(
+          (tx) => tx.contract_call.function_name === "list-in-ustx"
+        );
+
+        if (firstTx.contract_call.function_name === "unlist-in-ustx") {
+          if (unlistTx.length > 0) {
+            if (listTx.length > 0) {
+              setIsListingPendingTx(true);
+            }
+            trackTransaction(
+              unlistTx[0].tx_id,
+              setIsUnlistingPendingTx,
+              updateListingDetails
+            );
+          }
+        } else {
+          if (listTx.length > 0) {
+            if (unlistTx.length > 0) {
+              setIsUnlistingPendingTx(true);
+            }
+            trackTransaction(
+              listTx[0].tx_id,
+              setIsListingPendingTx,
+              updateListingDetails
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const getGenuineMetadata = async () => {
@@ -158,22 +455,20 @@ function View(props) {
           Buffer.from(ownerDetails.result.substr(2), "hex")
         );
 
-        const listing = listingCv.value.value
-          ? {
-              owner: cvToString(listingCv.value.value.data.owner),
-              price: cvToString(listingCv.value.value.data.price).substr(1),
-            }
-          : cvToString(listingCv.value);
-        metadataCV = metadataCV.value.value.data;
+        const listing =
+          "value" in listingCv
+            ? {
+                owner: cvToString(listingCv.value.data.owner),
+                price: cvToString(listingCv.value.data.price).substr(1),
+              }
+            : cvToString(listingCv);
+        metadataCV = metadataCV.value.data;
 
         let data = {
           id,
           author: cvToString(metadataCV["author"]),
           createdAt: cvToString(metadataCV["created-at"]).substr(1),
-          level:
-            cvToString(metadataCV["level"]) === "none"
-              ? "none"
-              : cvToString(metadataCV["level"].value).substr(1),
+          level: cvToString(metadataCV["level"]).substr(1),
           metadataUri: metadataCV["metadata-uri"].data,
           listingDetails: listing,
           owner: cvToString(ownerCv.value.value),
@@ -228,6 +523,17 @@ function View(props) {
               alert={alert}
               userData={userData}
               pendingSaleDetails={pendingSaleDetails}
+              isListingPendingTx={isListingPendingTx}
+              setIsListingPendingTx={setIsListingPendingTx}
+              isUnlistingPendingTx={isUnlistingPendingTx}
+              setIsUnlistingPendingTx={setIsUnlistingPendingTx}
+              trackTransaction={trackTransaction}
+              updateListingDetails={updateListingDetails}
+              isBuyingPendingTx={isBuyingPendingTx}
+              setIsBuyingPendingTx={setIsBuyingPendingTx}
+              updatePendingSaleDetails={updatePendingSaleDetails}
+              setIsReleasingPendingTx={setIsReleasingPendingTx}
+              isReleasingPendingTx={isReleasingPendingTx}
             />
           )
         ) : (
@@ -276,15 +582,56 @@ const Content = (props) => {
     alert,
     userData,
     pendingSaleDetails,
+    isListingPendingTx,
+    setIsListingPendingTx,
+    isUnlistingPendingTx,
+    setIsUnlistingPendingTx,
+    trackTransaction,
+    updateListingDetails,
+    isBuyingPendingTx,
+    setIsBuyingPendingTx,
+    updatePendingSaleDetails,
+    setIsReleasingPendingTx,
+    isReleasingPendingTx,
   } = props;
   // console.log(metadata);
 
   const [isListingOpen, setIsListingOpen] = useState(false);
-  console.log(metadata)
+  const [formLoading, setFormLoading] = useState(false);
+  const [price, setPrice] = useState("");
 
-  useEffect(() => {}, [metadata]);
+  const [isFileVerified, setIsFileVerified] = useState(false);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
+  const [isLicensing, setIsLicensing] = useState(false);
 
-  const ContractUnlist = async () => {
+  const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
+
+  useEffect(() => {
+    const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
+
+    if (localStorageNFT) {
+      const parsedData = JSON.parse(localStorageNFT);
+      if (parsedData.constructor === Array && parsedData.length !== 0) {
+        if (
+          parsedData.filter(
+            (nft) =>
+              nft.fileHash === metadata.file_hash &&
+              nft.fileName === metadata.file_name_owner_copy
+          ).length > 0
+        ) {
+          setIsFileVerified(true);
+        } else {
+          setIsFileVerified(false);
+        }
+      } else {
+        setIsFileVerified(false);
+      }
+    } else {
+      setIsFileVerified(false);
+    }
+  }, []);
+
+  const contractUnlist = async () => {
     const transactionOptions = {
       contractAddress: smartistsContractAddress,
       contractName: assetContractName,
@@ -298,11 +645,16 @@ const Content = (props) => {
       appDetails,
       postConditionMode: PostConditionMode.Deny,
       postConditions: [],
-      onFinish: (data) => {
+      onFinish: async (data) => {
         alert.success(
           "Successfully placed your transaction. Please for a while."
         );
-        // navigate(`/${userData.profile.stxAddress.mainnet}/studio/nft`);
+
+        trackTransaction(
+          data.txId,
+          setIsUnlistingPendingTx,
+          updateListingDetails
+        );
         setIsListingOpen(false);
         setTransactionId(data.txId);
         setWaitTransaction(true);
@@ -317,7 +669,7 @@ const Content = (props) => {
     await openContractCall(transactionOptions);
   };
 
-  const ContractPurchase = async () => {
+  const contractBuy = async () => {
     const nonFungibleAssetInfo = createAssetInfo(
       smartistsContractAddress,
       assetContractName,
@@ -326,10 +678,10 @@ const Content = (props) => {
     const transactionOptions = {
       contractAddress: smartistsContractAddress,
       contractName: assetContractName,
-      functionName: "purchase-in-ustx",
+      functionName: "buy-in-ustx",
       functionArgs: [
         uintCV(parseInt(metadata.id)),
-        stringAsciiCV(getPublicKeyFromPrivate(userData.appPrivateKey)),
+        // stringAsciiCV(getPublicKeyFromPrivate(userData.appPrivateKey)),
         // level === 0 ? noneCV() : someCV(uintCV(level)),
         // stringAsciiCV(`ipfs://${uploadIPFS.data.ipfsData.IpfsHash}`),
       ],
@@ -353,6 +705,11 @@ const Content = (props) => {
         alert.success(
           "Successfully placed your transaction. Please for a while."
         );
+        trackTransaction(
+          data.txId,
+          setIsBuyingPendingTx,
+          updatePendingSaleDetails
+        );
         // navigate(`/${userData.profile.stxAddress.mainnet}/studio/nft`);
         setIsListingOpen(false);
         setTransactionId(data.txId);
@@ -367,6 +724,506 @@ const Content = (props) => {
     };
     await openContractCall(transactionOptions);
   };
+
+  const contractList = async () => {
+    if (price !== "") {
+      setIsProcessingTransaction(true);
+      const transactionOptions = {
+        contractAddress: smartistsContractAddress,
+        contractName: "genuine-v1",
+        functionName: "list-in-ustx",
+        functionArgs: [
+          uintCV(parseInt(metadata.id)),
+          uintCV(parseInt(price * 1000000)),
+          // level === 0 ? noneCV() : someCV(uintCV(level)),
+          // stringAsciiCV(`ipfs://${uploadIPFS.data.ipfsData.IpfsHash}`),
+        ],
+        network,
+        appDetails,
+        postConditionMode: PostConditionMode.Deny,
+        postConditions: [],
+        onFinish: async (data) => {
+          setIsProcessingTransaction(false);
+          alert.success(
+            "Successfully placed your transaction. Please for a while."
+          );
+
+          trackTransaction(
+            data.txId,
+            setIsListingPendingTx,
+            updateListingDetails
+          );
+          setIsListingOpen(false);
+          setTransactionId(data.txId);
+          // setIsListingPendingTx(data.txId);
+          setWaitTransaction(true);
+          console.log("Stacks Transaction:", data.stacksTransaction);
+          console.log("Transaction ID:", data.txId);
+          console.log("Raw transaction:", data.txRaw);
+        },
+        onCancel: () => {
+          setIsProcessingTransaction(false);
+          setFormLoading(false);
+          console.log("Cancelled");
+        },
+      };
+
+      try {
+        const checkFile = async () => {
+          try {
+            const ownerCopy = await getFileFromStorage(
+              // metadata.file_name_owner_copy,
+              metadata.author === walletAddress
+                ? metadata.file_name_author_copy
+                : metadata.file_name_owner_copy,
+              {
+                decrypt: true,
+              }
+            );
+            return ownerCopy;
+          } catch (error) {
+            return null;
+          }
+        };
+        const ownerCopy = await checkFile();
+
+        if (
+          !ownerCopy ||
+          !ownerCopy.buffer ||
+          sha256(ownerCopy.buffer) !== metadata.file_hash
+        ) {
+          console.log("missing from storage");
+          const localStorageNFT = localStorage.getItem(
+            "memberNftVerifiedFiles"
+          );
+          let nftList = [];
+          if (localStorageNFT) {
+            const parsedData = JSON.parse(localStorageNFT);
+            if (parsedData.constructor === Array) {
+              nftList = [...JSON.parse(localStorageNFT)];
+            }
+          }
+
+          if (nftList.length !== 0) {
+            const verifiedList = nftList.filter(
+              (nft) =>
+                nft.fileHash !== metadata.file_hash &&
+                nft.fileName !== metadata.file_name_owner_copy
+            );
+            localStorage.setItem(
+              "memberNftVerifiedFiles",
+              JSON.stringify(verifiedList)
+            );
+          }
+
+          setIsFileVerified(false);
+          setIsProcessingTransaction(false);
+          alert.error("Please verify your file");
+        } else {
+          await openContractCall(transactionOptions);
+        }
+      } catch (error) {
+        console.log(error);
+        setIsProcessingTransaction(false);
+        setIsFileVerified(false);
+        alert.error("There was an error processing your request");
+      }
+    } else {
+      alert.error("Please fill the up the required details!");
+    }
+  };
+
+  const contractRelease = async () => {
+    console.log(pendingSaleDetails);
+    console.log(metadata);
+    setIsProcessingTransaction(true);
+    const nonFungibleAssetInfo = createAssetInfo(
+      smartistsContractAddress,
+      assetContractName,
+      "Genuine"
+    );
+    const transactionOptions = {
+      contractAddress: smartistsContractAddress,
+      contractName: assetContractName,
+      functionName: "release-genuine",
+      functionArgs: [uintCV(parseInt(metadata.id))],
+      network,
+      appDetails,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions: [
+        makeContractNonFungiblePostCondition(
+          smartistsContractAddress,
+          assetContractName,
+          NonFungibleConditionCode.DoesNotOwn,
+          nonFungibleAssetInfo,
+          uintCV(parseInt(metadata.id))
+        ),
+      ],
+      onFinish: (data) => {
+        setIsProcessingTransaction(false);
+        alert.success(
+          "Successfully placed your transaction. Please for a while."
+        );
+        // navigate(`/${userData.profile.stxAddress.mainnet}/studio/nft`);
+        const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
+        let nftList = [];
+        if (localStorageNFT) {
+          const parsedData = JSON.parse(localStorageNFT);
+          if (parsedData.constructor === Array) {
+            nftList = [...JSON.parse(localStorageNFT)];
+          }
+        }
+
+        if (nftList.length !== 0) {
+          const verifiedList = nftList.filter(
+            (nft) =>
+              nft.fileHash !== metadata.file_hash &&
+              nft.fileName !== metadata.file_name_owner_copy
+          );
+          localStorage.setItem(
+            "memberNftVerifiedFiles",
+            JSON.stringify(verifiedList)
+          );
+        }
+        setIsListingOpen(false);
+        setTransactionId(data.txId);
+        setWaitTransaction(true);
+        trackTransaction(
+          data.txId,
+          setIsReleasingPendingTx,
+          updateListingDetails
+        );
+        console.log("Stacks Transaction:", data.stacksTransaction);
+        console.log("Transaction ID:", data.txId);
+        console.log("Raw transaction:", data.txRaw);
+      },
+      onCancel: () => {
+        const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
+        let nftList = [];
+        if (localStorageNFT) {
+          const parsedData = JSON.parse(localStorageNFT);
+          if (parsedData.constructor === Array) {
+            nftList = [...JSON.parse(localStorageNFT)];
+          }
+        }
+
+        if (nftList.length !== 0) {
+          const verifiedList = nftList.filter(
+            (nft) =>
+              nft.fileHash !== metadata.file_hash &&
+              nft.fileName !== metadata.file_name_owner_copy
+          );
+          localStorage.setItem(
+            "memberNftVerifiedFiles",
+            JSON.stringify(verifiedList)
+          );
+        }
+        setIsFileVerified(false);
+        setIsProcessingTransaction(false);
+        alert.info("Please verify your file again before transacting");
+        console.log("Cancelled");
+      },
+    };
+
+    try {
+      const checkFile = async () => {
+        try {
+          const ownerCopy = await getFileFromStorage(
+            // metadata.file_name_owner_copy,
+            metadata.author === walletAddress
+              ? metadata.file_name_author_copy
+              : metadata.file_name_owner_copy,
+            {
+              decrypt: true,
+            }
+          );
+          return ownerCopy;
+        } catch (error) {
+          return null;
+        }
+      };
+      const ownerCopy = await checkFile();
+
+      if (
+        !ownerCopy ||
+        !ownerCopy.buffer ||
+        sha256(ownerCopy.buffer) !== metadata.file_hash
+      ) {
+        console.log("missing from storage");
+        const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
+        let nftList = [];
+        if (localStorageNFT) {
+          const parsedData = JSON.parse(localStorageNFT);
+          if (parsedData.constructor === Array) {
+            nftList = [...JSON.parse(localStorageNFT)];
+          }
+        }
+
+        if (nftList.length !== 0) {
+          const verifiedList = nftList.filter(
+            (nft) =>
+              nft.fileHash !== metadata.file_hash &&
+              nft.fileName !== metadata.file_name_owner_copy
+          );
+          localStorage.setItem(
+            "memberNftVerifiedFiles",
+            JSON.stringify(verifiedList)
+          );
+        }
+        setIsProcessingTransaction(false);
+        setIsFileVerified(false);
+        alert.error("Please verify your file");
+      } else {
+        let newOwnerPublicKey = await axios.get(
+          `${apiServer}/smartistsusers/public-key/${pendingSaleDetails.newOwner}`
+        );
+        newOwnerPublicKey = newOwnerPublicKey.data.SmartistsUser.publicKey;
+
+        await addFileToStorage(
+          { name: metadata.file_name_owner_copy },
+          ownerCopy.buffer,
+          {
+            encrypt: newOwnerPublicKey,
+          }
+        );
+        await openContractCall(transactionOptions);
+      }
+    } catch (error) {
+      console.log(error);
+      setIsProcessingTransaction(false);
+      alert.error("There was an error processing your request");
+    }
+  };
+
+  const verifyFile = async () => {
+    setIsLoadingFile(true);
+    const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
+    let nftList = [];
+    console.log(JSON.parse(localStorageNFT));
+
+    if (localStorageNFT) {
+      const parsedData = JSON.parse(localStorageNFT);
+      if (parsedData.constructor === Array) {
+        nftList = [...JSON.parse(localStorageNFT)];
+      }
+    }
+
+    if (nftList.length !== 0) {
+      if (
+        nftList.filter(
+          (nft) =>
+            nft.fileHash === metadata.file_hash &&
+            nft.fileName === metadata.file_name_owner_copy
+        ).length > 0
+      ) {
+        setIsFileVerified(true);
+        setIsLoadingFile(false);
+        alert.info("File already verified");
+        return true;
+      }
+    }
+
+    try {
+      const checkFile = async () => {
+        try {
+          const ownerCopy = await getFileFromStorage(
+            metadata.file_name_owner_copy,
+            {
+              decrypt: true,
+            }
+          );
+          return ownerCopy;
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const ownerCopy = await checkFile();
+      if (
+        ownerCopy &&
+        ownerCopy.buffer &&
+        sha256(ownerCopy.buffer) === metadata.file_hash
+      ) {
+        localStorage.setItem(
+          "memberNftVerifiedFiles",
+          JSON.stringify([
+            ...nftList,
+            {
+              fileName: metadata.file_name_owner_copy,
+              fileHash: metadata.file_hash,
+              owner: metadata.owner,
+              verifiedAt: Date.now(),
+            },
+          ])
+        );
+        setIsFileVerified(true);
+        setIsLoadingFile(false);
+        alert.success("File verified");
+        return true;
+      }
+      const lastOwnerDetails = await smartContractsApi.callReadOnlyFunction({
+        contractAddress: smartistsContractAddress,
+        contractName: assetContractName,
+        functionName: "get-last-owner",
+        readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
+          sender: walletAddress,
+          arguments: [cvToHex(uintCV(metadata.id))],
+        }),
+      });
+      let lastOwnerCv = deserializeCV(
+        Buffer.from(lastOwnerDetails.result.substr(2), "hex")
+      );
+      const lastOwnerAddress =
+        "value" in lastOwnerCv
+          ? cvToString(lastOwnerCv.value)
+          : cvToString(lastOwnerCv);
+      if (lastOwnerAddress === "none") {
+        throw Error("No previous owner");
+      }
+      let lastOwnerPublicKey = await axios.get(
+        `${apiServer}/smartistsusers/public-key/${lastOwnerAddress}`
+      );
+      lastOwnerPublicKey = lastOwnerPublicKey.data.SmartistsUser.publicKey;
+      const gaiaReadUrl = publicKeyToAddress(lastOwnerPublicKey);
+
+      const checkFromLastOwner = async () => {
+        try {
+          const encryptedFile = await axios.get(
+            `https://gaia.blockstack.org/hub/${gaiaReadUrl}/${metadata.file_name_owner_copy}`
+          );
+          return encryptedFile.data;
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const lastOwnerCopy = await checkFromLastOwner();
+      if (!lastOwnerCopy) {
+        setIsLoadingFile(false);
+        alert.error(
+          "Last owner did not processed your copy. Please contact the last owner or author to give you a copy"
+        );
+        return true;
+      }
+      const content = await decryptContent(JSON.stringify(lastOwnerCopy), {
+        privateKey: userData.appPrivateKey,
+      });
+
+      if (!content.buffer || sha256(content.buffer) !== metadata.file_hash) {
+        setIsLoadingFile(false);
+        alert.error(
+          "Last owner changed their copy to other copy please report to the admin"
+        );
+        return true;
+      }
+
+      await addFileToStorage(
+        { name: metadata.file_name_owner_copy },
+        content.buffer,
+        {
+          encrypt: true,
+        }
+      );
+
+      localStorage.setItem(
+        "memberNftVerifiedFiles",
+        JSON.stringify([
+          ...nftList,
+          {
+            fileName: metadata.file_name_owner_copy,
+            fileHash: metadata.file_hash,
+            owner: metadata.owner,
+            verifiedAt: Date.now(),
+          },
+        ])
+      );
+      setIsFileVerified(true);
+      setIsLoadingFile(false);
+      alert.success("File verified and uploaded to your Gaia Storage");
+    } catch (error) {
+      setIsLoadingFile(false);
+      alert.error("There was an error verifying your file");
+      console.log(error);
+    }
+  };
+
+  const downloadFile = async () => {
+    setIsLoadingFile(true);
+
+    try {
+      const checkFile = async () => {
+        try {
+          const ownerCopy = await getFileFromStorage(
+            // metadata.file_name_owner_copy,
+            metadata.author === walletAddress
+              ? metadata.file_name_author_copy
+              : metadata.file_name_owner_copy,
+            {
+              decrypt: true,
+            }
+          );
+          return ownerCopy;
+        } catch (error) {
+          return null;
+        }
+      };
+      const ownerCopy = await checkFile();
+
+      if (
+        !ownerCopy ||
+        !ownerCopy.buffer ||
+        sha256(ownerCopy.buffer) !== metadata.file_hash
+      ) {
+        console.log("missing from storage");
+        const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
+        let nftList = [];
+        if (localStorageNFT) {
+          const parsedData = JSON.parse(localStorageNFT);
+          if (parsedData.constructor === Array) {
+            nftList = [...JSON.parse(localStorageNFT)];
+          }
+        }
+
+        if (nftList.length !== 0) {
+          const verifiedList = nftList.filter(
+            (nft) =>
+              nft.fileHash !== metadata.file_hash &&
+              nft.fileName !== metadata.file_name_owner_copy
+          );
+          localStorage.setItem(
+            "memberNftVerifiedFiles",
+            JSON.stringify(verifiedList)
+          );
+        }
+        setIsLoadingFile(false);
+        setIsFileVerified(false);
+        alert.error("Please verify your file");
+      } else {
+        const fileBlob = new Blob([ownerCopy.buffer], {
+          type: metadata.file_mime_type,
+        });
+        const url = window.URL.createObjectURL(fileBlob);
+        console.log(fileBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+          "download",
+          metadata.file_name_owner_copy.replace("smartists/nft/", "")
+        );
+
+        // Append to html link element page
+        document.body.appendChild(link);
+
+        link.click();
+        setIsLoadingFile(false);
+      }
+    } catch (error) {
+      setIsLoadingFile(false);
+      setIsFileVerified(false);
+      alert.error("Please verify your file");
+    }
+  };
+
   return (
     <div className="w-full">
       <Grid className="w-full mt-16">
@@ -389,11 +1246,8 @@ const Content = (props) => {
               metadata.owner ===
               `${smartistsContractAddress}.${assetContractName}` ? (
                 pendingSaleDetails &&
-                pendingSaleDetails.owner === walletAddress ? (
-                  <button className="px-8 py-2 text-white shadow rounded-md bg-red-900 w-44 font-medium">
-                    Release
-                  </button>
-                ) : pendingSaleDetails &&
+                pendingSaleDetails.owner ===
+                  walletAddress ? null : pendingSaleDetails &&
                   pendingSaleDetails.newOwner === walletAddress ? (
                   "Your NFT will be sent to you once the owner makes you a copy of the original file of the NFT and releases it"
                 ) : (
@@ -412,54 +1266,652 @@ const Content = (props) => {
             )}
           </p>
           <div className="mt-8">
-            {metadata.listingDetails === "none" ? (
-              walletAddress === metadata.owner ? (
-                <>
-                  <button
-                    className="px-8 py-2 text-white shadow rounded-md bg-red-900 w-44 font-medium"
+            <ul className="grid gap-2 w-64">
+              {metadata.listingDetails === "none" &&
+                walletAddress === metadata.owner && (
+                  <>
+                    <li
+                      className={classNames(
+                        "p-2 flex items-center",
+                        isListingPendingTx || isProcessingTransaction
+                          ? "bg-gray-200"
+                          : "hover:bg-gray-100 cursor-pointer"
+                      )}
+                      onClick={() => {
+                        if (isListingPendingTx || isProcessingTransaction) {
+                          return true;
+                        }
+                        setIsListing(true);
+                        setIsListingOpen(true);
+                      }}
+                    >
+                      <span
+                        className={classNames(
+                          "text-md",
+                          isListingPendingTx || isProcessingTransaction
+                            ? "text-gray-400"
+                            : "text-red-900"
+                        )}
+                      >
+                        <BsPlusSquare />
+                      </span>
+                      <span className="ml-4 text-gray-600 font-medium flex-1">
+                        {isProcessingTransaction ? (
+                          <span className="ml-1">Processing...</span>
+                        ) : isListingPendingTx ? (
+                          <span className="ml-1">List Pending...</span>
+                        ) : (
+                          "List"
+                        )}
+                      </span>
+                      <span>
+                        {isListingPendingTx || isProcessingTransaction ? (
+                          <Oval
+                            ariaLabel="loading-indicator"
+                            height={24}
+                            width={24}
+                            strokeWidth={5}
+                            strokeWidthSecondary={1}
+                            color="blue"
+                            secondaryColor="gray"
+                            className="mr-8"
+                          />
+                        ) : null}
+                      </span>
+                    </li>
+
+                    <li className="p-2 flex items-center bg-gray-200">
+                      <span
+                        className={classNames(
+                          "text-md",
+                          true ? "text-gray-400" : "text-red-900"
+                        )}
+                      >
+                        <BsGift />
+                      </span>
+                      <span className="ml-4 text-gray-600 font-medium flex-1">
+                        Transfer
+                      </span>
+                    </li>
+                    {walletAddress !== metadata.author ? (
+                      <>
+                        <li className="p-2 flex items-center hover:bg-gray-100 cursor-pointer">
+                          <span
+                            className={classNames(
+                              "text-md",
+                              false ? "text-gray-400" : "text-red-900"
+                            )}
+                          >
+                            <BsKey />
+                          </span>
+                          <span className="ml-4 text-gray-600 font-medium flex-1">
+                            Buy License
+                          </span>
+                        </li>
+                        {isFileVerified ? (
+                          <li
+                            className={classNames(
+                              "p-2 flex items-center",
+                              isLoadingFile
+                                ? "bg-gray-200"
+                                : "hover:bg-gray-100 cursor-pointer"
+                            )}
+                            onClick={() => {
+                              if (isLoadingFile) {
+                                return true;
+                              }
+                              downloadFile();
+                            }}
+                          >
+                            <span
+                              className={classNames(
+                                "text-md",
+                                isLoadingFile ? "text-gray-400" : "text-red-900"
+                              )}
+                            >
+                              <BsDownload />
+                            </span>
+                            <span className="ml-4 text-gray-600 font-medium flex-1">
+                              {isLoadingFile
+                                ? "Downloading File..."
+                                : "Download File"}
+                            </span>
+                            <span>
+                              {isLoadingFile ? (
+                                <Oval
+                                  ariaLabel="loading-indicator"
+                                  height={24}
+                                  width={24}
+                                  strokeWidth={5}
+                                  strokeWidthSecondary={1}
+                                  color="blue"
+                                  secondaryColor="gray"
+                                  className="mr-8"
+                                />
+                              ) : null}
+                            </span>
+                          </li>
+                        ) : (
+                          <li
+                            className={classNames(
+                              "p-2 flex items-center",
+                              isLoadingFile
+                                ? "bg-gray-200"
+                                : "hover:bg-gray-100 cursor-pointer"
+                            )}
+                            onClick={() => {
+                              if (isLoadingFile) {
+                                return true;
+                              }
+                              verifyFile();
+                            }}
+                          >
+                            <span
+                              className={classNames(
+                                "text-md",
+                                isLoadingFile ? "text-gray-400" : "text-red-900"
+                              )}
+                            >
+                              <BsDownload />
+                            </span>
+                            <span className="ml-4 text-gray-600 font-medium flex-1">
+                              {isLoadingFile
+                                ? "Verifying File..."
+                                : "Verify File"}
+                            </span>
+                            <span>
+                              {isLoadingFile ? (
+                                <Oval
+                                  ariaLabel="loading-indicator"
+                                  height={24}
+                                  width={24}
+                                  strokeWidth={5}
+                                  strokeWidthSecondary={1}
+                                  color="blue"
+                                  secondaryColor="gray"
+                                  className="mr-8"
+                                />
+                              ) : null}
+                            </span>
+                          </li>
+                        )}
+                      </>
+                    ) : null}
+                  </>
+                )}
+
+              {metadata.listingDetails !== "none" &&
+                walletAddress === metadata.owner && (
+                  <>
+                    <li
+                      className={classNames(
+                        "p-2 flex items-center",
+                        isListingPendingTx
+                          ? "bg-gray-200"
+                          : "hover:bg-gray-100 cursor-pointer"
+                      )}
+                      onClick={() => {
+                        if (isListingPendingTx) {
+                          return true;
+                        }
+                        setIsListing(false);
+                        setIsListingOpen(true);
+                      }}
+                    >
+                      <span
+                        className={classNames(
+                          "text-md",
+                          isListingPendingTx ? "text-gray-400" : "text-red-900"
+                        )}
+                      >
+                        <BsPencilSquare />
+                      </span>
+                      <span className="ml-4 text-gray-600 font-medium flex-1">
+                        {isListingPendingTx
+                          ? "Update Pending..."
+                          : "Update Price"}
+                      </span>
+                      <span>
+                        {isListingPendingTx ? (
+                          <Oval
+                            ariaLabel="loading-indicator"
+                            height={24}
+                            width={24}
+                            strokeWidth={5}
+                            strokeWidthSecondary={1}
+                            color="blue"
+                            secondaryColor="gray"
+                            className="mr-8"
+                          />
+                        ) : null}
+                      </span>
+                    </li>
+                    <li
+                      className={classNames(
+                        "p-2 flex items-center",
+                        isUnlistingPendingTx
+                          ? "bg-gray-200"
+                          : "hover:bg-gray-100 cursor-pointer"
+                      )}
+                      onClick={() => {
+                        if (isUnlistingPendingTx) {
+                          return true;
+                        }
+                        contractUnlist();
+                      }}
+                    >
+                      <span
+                        className={classNames(
+                          "text-md",
+                          isUnlistingPendingTx
+                            ? "text-gray-400"
+                            : "text-red-900"
+                        )}
+                      >
+                        <BsXSquare />
+                      </span>
+                      <span className="ml-4 text-gray-600 font-medium flex-1">
+                        {isUnlistingPendingTx ? "Unlist Pending..." : "Unlist"}
+                      </span>
+                      <span>
+                        {isUnlistingPendingTx ? (
+                          <Oval
+                            ariaLabel="loading-indicator"
+                            height={24}
+                            width={24}
+                            strokeWidth={5}
+                            strokeWidthSecondary={1}
+                            color="blue"
+                            secondaryColor="gray"
+                            className="mr-8"
+                          />
+                        ) : null}
+                      </span>
+                    </li>
+                    {walletAddress !== metadata.author ? (
+                      isFileVerified ? (
+                        <li
+                          className={classNames(
+                            "p-2 flex items-center",
+                            isLoadingFile
+                              ? "bg-gray-200"
+                              : "hover:bg-gray-100 cursor-pointer"
+                          )}
+                          onClick={() => {
+                            if (isLoadingFile) {
+                              return true;
+                            }
+                            downloadFile();
+                          }}
+                        >
+                          <span
+                            className={classNames(
+                              "text-md",
+                              isLoadingFile ? "text-gray-400" : "text-red-900"
+                            )}
+                          >
+                            <BsDownload />
+                          </span>
+                          <span className="ml-4 text-gray-600 font-medium flex-1">
+                            {isLoadingFile
+                              ? "Downloading File..."
+                              : "Download File"}
+                          </span>
+                          <span>
+                            {isLoadingFile ? (
+                              <Oval
+                                ariaLabel="loading-indicator"
+                                height={24}
+                                width={24}
+                                strokeWidth={5}
+                                strokeWidthSecondary={1}
+                                color="blue"
+                                secondaryColor="gray"
+                                className="mr-8"
+                              />
+                            ) : null}
+                          </span>
+                        </li>
+                      ) : (
+                        <li
+                          className={classNames(
+                            "p-2 flex items-center",
+                            isLoadingFile
+                              ? "bg-gray-200"
+                              : "hover:bg-gray-100 cursor-pointer"
+                          )}
+                          onClick={() => {
+                            if (isLoadingFile) {
+                              return true;
+                            }
+                            verifyFile();
+                          }}
+                        >
+                          <span
+                            className={classNames(
+                              "text-md",
+                              isLoadingFile ? "text-gray-400" : "text-red-900"
+                            )}
+                          >
+                            <BsDownload />
+                          </span>
+                          <span className="ml-4 text-gray-600 font-medium flex-1">
+                            {isLoadingFile
+                              ? "Verifying File..."
+                              : "Verify File"}
+                          </span>
+                          <span>
+                            {isLoadingFile ? (
+                              <Oval
+                                ariaLabel="loading-indicator"
+                                height={24}
+                                width={24}
+                                strokeWidth={5}
+                                strokeWidthSecondary={1}
+                                color="blue"
+                                secondaryColor="gray"
+                                className="mr-8"
+                              />
+                            ) : null}
+                          </span>
+                        </li>
+                      )
+                    ) : null}
+                  </>
+                )}
+              {metadata.listingDetails !== "none" &&
+                walletAddress !== metadata.owner && (
+                  <li
+                    className={classNames(
+                      "p-2 flex items-center",
+                      isBuyingPendingTx
+                        ? "bg-gray-200"
+                        : "hover:bg-gray-100 cursor-pointer"
+                    )}
                     onClick={() => {
-                      setIsListing(true);
-                      setIsListingOpen(true);
+                      if (isBuyingPendingTx) {
+                        return true;
+                      }
+                      contractBuy();
                     }}
                   >
-                    List
-                  </button>
-                  <button className="px-8 py-2 text-gray-600 shadow rounded-md  w-44 font-medium">
-                    Transfer
-                  </button>
-                </>
-              ) : null
+                    <span>
+                      <img
+                        src={StxIcon}
+                        alt="Stacks Icon"
+                        height={24}
+                        width={24}
+                      />
+                    </span>
+                    <span className="ml-4 text-gray-600 font-medium flex-1">
+                      {isBuyingPendingTx ? "Buy Pending..." : "Buy"}
+                    </span>
+                    <span>
+                      {isBuyingPendingTx ? (
+                        <Oval
+                          ariaLabel="loading-indicator"
+                          height={24}
+                          width={24}
+                          strokeWidth={5}
+                          strokeWidthSecondary={1}
+                          color="blue"
+                          secondaryColor="gray"
+                          className="mr-8"
+                        />
+                      ) : null}
+                    </span>
+                  </li>
+                )}
+              {metadata.listingDetails === "none" &&
+                metadata.owner ===
+                  `${smartistsContractAddress}.${assetContractName}` &&
+                pendingSaleDetails &&
+                pendingSaleDetails.owner === walletAddress && (
+                  <>
+                    <li
+                      className={classNames(
+                        "p-2 flex items-center -mt-8",
+                        isReleasingPendingTx || isProcessingTransaction
+                          ? "bg-gray-200"
+                          : "hover:bg-gray-100 cursor-pointer"
+                      )}
+                      onClick={() => {
+                        if (isReleasingPendingTx || isProcessingTransaction) {
+                          return true;
+                        }
+                        contractRelease();
+                      }}
+                    >
+                      <span
+                        className={classNames(
+                          "text-md",
+                          isReleasingPendingTx || isProcessingTransaction
+                            ? "text-gray-400"
+                            : "text-red-900"
+                        )}
+                      >
+                        <IoRocketOutline />
+                      </span>
+                      <span className="ml-4 text-gray-600 font-medium flex-1">
+                        {isProcessingTransaction
+                          ? "Processing..."
+                          : isReleasingPendingTx
+                          ? "Release Pending..."
+                          : "Release"}
+                      </span>
+                      <span>
+                        {isReleasingPendingTx || isProcessingTransaction ? (
+                          <Oval
+                            ariaLabel="loading-indicator"
+                            height={24}
+                            width={24}
+                            strokeWidth={5}
+                            strokeWidthSecondary={1}
+                            color="blue"
+                            secondaryColor="gray"
+                            className="mr-8"
+                          />
+                        ) : null}
+                      </span>
+                    </li>
+
+                    {isFileVerified ? (
+                      <li
+                        className={classNames(
+                          "p-2 flex items-center",
+                          isLoadingFile
+                            ? "bg-gray-200"
+                            : "hover:bg-gray-100 cursor-pointer"
+                        )}
+                        onClick={() => {
+                          if (isLoadingFile) {
+                            return true;
+                          }
+                          downloadFile();
+                        }}
+                      >
+                        <span
+                          className={classNames(
+                            "text-md",
+                            isLoadingFile ? "text-gray-400" : "text-red-900"
+                          )}
+                        >
+                          <BsDownload />
+                        </span>
+                        <span className="ml-4 text-gray-600 font-medium flex-1">
+                          {isLoadingFile
+                            ? "Downloading File..."
+                            : "Download File"}
+                        </span>
+                        <span>
+                          {isLoadingFile ? (
+                            <Oval
+                              ariaLabel="loading-indicator"
+                              height={24}
+                              width={24}
+                              strokeWidth={5}
+                              strokeWidthSecondary={1}
+                              color="blue"
+                              secondaryColor="gray"
+                              className="mr-8"
+                            />
+                          ) : null}
+                        </span>
+                      </li>
+                    ) : (
+                      <li
+                        className={classNames(
+                          "p-2 flex items-center",
+                          isLoadingFile
+                            ? "bg-gray-200"
+                            : "hover:bg-gray-100 cursor-pointer"
+                        )}
+                        onClick={() => {
+                          if (isLoadingFile) {
+                            return true;
+                          }
+                          verifyFile();
+                        }}
+                      >
+                        <span
+                          className={classNames(
+                            "text-md",
+                            isLoadingFile ? "text-gray-400" : "text-red-900"
+                          )}
+                        >
+                          <BsDownload />
+                        </span>
+                        <span className="ml-4 text-gray-600 font-medium flex-1">
+                          {isLoadingFile ? "Verifying File..." : "Verify File"}
+                        </span>
+                        <span>
+                          {isLoadingFile ? (
+                            <Oval
+                              ariaLabel="loading-indicator"
+                              height={24}
+                              width={24}
+                              strokeWidth={5}
+                              strokeWidthSecondary={1}
+                              color="blue"
+                              secondaryColor="gray"
+                              className="mr-8"
+                            />
+                          ) : null}
+                        </span>
+                      </li>
+                    )}
+                  </>
+                )}
+
+              {/* <li className="p-2 flex items-center hover:bg-gray-100 cursor-pointer">
+                <span
+                  className={classNames(
+                    "text-md",
+                    true ? "text-gray-400" : "text-red-900"
+                  )}
+                >
+                  <IoSyncOutline />
+                </span>
+                <span className="ml-4 text-gray-600 font-medium flex-1">
+                  Renew License
+                </span>
+              </li> */}
+            </ul>
+            {/* {metadata.listingDetails === "none" ? (
+              walletAddress === metadata.owner ? null : null
             ) : walletAddress === metadata.owner ? (
-              <>
+              <div className="flex">
                 <button
-                  className="px-8 py-2 text-white shadow rounded-md bg-red-900 w-44 font-medium"
+                  className={classNames(
+                    isListingPendingTx ? "px-4" : "px-8",
+                    "py-2 text-white shadow rounded-md bg-red-900 h-12 font-medium flex items-center justify-center disabled:bg-gray-400"
+                  )}
+                  disabled={isListingPendingTx}
                   onClick={() => {
                     setIsListing(false);
                     setIsListingOpen(true);
                   }}
                 >
-                  Update Price
+                  {isListingPendingTx && (
+                    <Oval
+                      ariaLabel="loading-indicator"
+                      height={24}
+                      width={24}
+                      strokeWidth={5}
+                      strokeWidthSecondary={1}
+                      color="blue"
+                      secondaryColor="white"
+                      className="mr-8"
+                    />
+                  )}
+                  {isListingPendingTx ? (
+                    <span className="ml-1">Updating Price...</span>
+                  ) : (
+                    " Update Price"
+                  )}
                 </button>
+
                 <button
-                  className="px-8 py-2 text-gray-600 shadow rounded-md  w-44 font-medium"
+                  className={classNames(
+                    isUnlistingPendingTx ? "px-4" : "px-8",
+                    "py-2 text-gray-600 shadow rounded-md h-12 font-medium flex items-center justify-center"
+                  )}
+                  disabled={isUnlistingPendingTx}
                   onClick={() => {
-                    ContractUnlist();
+                    contractUnlist();
                   }}
                 >
-                  Unlist
+                  {isUnlistingPendingTx && (
+                    <Oval
+                      ariaLabel="loading-indicator"
+                      height={24}
+                      width={24}
+                      strokeWidth={5}
+                      strokeWidthSecondary={1}
+                      color="blue"
+                      secondaryColor="white"
+                      className="mr-8"
+                    />
+                  )}
+                  {isUnlistingPendingTx ? (
+                    <span className="ml-1">Unlist Pending...</span>
+                  ) : (
+                    "Unlist"
+                  )}
                 </button>
-              </>
+              </div>
             ) : (
               <button
-                className="px-8 py-2 text-white shadow rounded-md bg-red-900 w-44 font-medium"
+                className={classNames(
+                  isBuyingPendingTx ? "px-4" : "px-8",
+                  "py-2 text-white shadow rounded-md bg-red-900 h-12 font-medium flex items-center justify-center disabled:bg-gray-400"
+                )}
+                disabled={isBuyingPendingTx}
                 onClick={() => {
-                  ContractPurchase();
+                  contractBuy();
                 }}
               >
-                Purchase
+                {isBuyingPendingTx && (
+                  <Oval
+                    ariaLabel="loading-indicator"
+                    height={24}
+                    width={24}
+                    strokeWidth={5}
+                    strokeWidthSecondary={1}
+                    color="blue"
+                    secondaryColor="white"
+                    className="mr-8"
+                  />
+                )}
+                {isBuyingPendingTx ? (
+                  <span className="ml-1">Buy Pending...</span>
+                ) : (
+                  "Buy"
+                )}
               </button>
-            )}
+            )} */}
           </div>
+
           <hr className="mt-12" />
 
           <div className="mt-4">
@@ -515,7 +1967,7 @@ const Content = (props) => {
           </div>
         </div>
         <div className="relative lg:col-span-6 lg:col-start-7 flex flex-col col-span-full">
-          {metadata.raw_file_mime_type.startsWith("image/") && (
+          {metadata.file_mime_type.startsWith("image/") && (
             <img
               className="w-full h-auto object-contain max-h-75vh rounded-lg"
               src={`https://smartists.mypinata.cloud/ipfs/${metadata.image.replace(
@@ -566,6 +2018,11 @@ const Content = (props) => {
         transactionId={transactionId}
         setTransactionId={setTransactionId}
         isListing={isListing}
+        formLoading={formLoading}
+        setFormLoading={setFormLoading}
+        price={price}
+        setPrice={setPrice}
+        contractList={contractList}
       />
     </div>
   );

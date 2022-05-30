@@ -314,7 +314,7 @@ function SmartistsUserEdit(props) {
             return imageCompression(file, uploadImageOptions);
           })
           .then((res) => {
-            return addFileToStorage("smartists/displayPicture", res, {
+            return addFileToStorage({dir: "smartists/displayPicture"}, res, {
               encrypt: false,
             });
           })

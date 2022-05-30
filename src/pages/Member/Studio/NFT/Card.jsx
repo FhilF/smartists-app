@@ -61,18 +61,13 @@ function Card(props) {
       let metadataCV = deserializeCV(
         Buffer.from(rawMetadata.result.substr(2), "hex")
       );
-      // console.log(metadataCV)
 
-      metadataCV = metadataCV.value.value.data;
-      // console.log(metadataCV)
+      metadataCV = metadataCV.value.data;
       let data = {
         id: intId,
         author: cvToString(metadataCV["author"]),
         createdAt: cvToString(metadataCV["created-at"]).substr(1),
-        level:
-          cvToString(metadataCV["level"]) === "none"
-            ? "none"
-            : cvToString(metadataCV["level"].value).substr(1),
+        level:cvToString(metadataCV["level"]).substr(1),
         metadataUri: metadataCV["metadata-uri"].data,
       };
 

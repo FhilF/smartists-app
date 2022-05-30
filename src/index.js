@@ -12,7 +12,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import "./styles/tailwind.css";
 
-import "./styles/scss/global.scss";
+// import "./styles/scss/global.scss";
 const options = {
   // you can also just use 'bottom center'
   position: positions.BOTTOM_RIGHT,
@@ -29,7 +29,7 @@ const AlertTemplate = ({ style, options, message, close }) => (
     className={classNames(
       "py-4 px-4 rounded-md !mr-8 !mb-8",
       options.type === "info" && "bg-blue-400",
-      options.type === "success" && "snackbar-success",
+      options.type === "success" && "bg-green-500",
       options.type === "error" && "bg-red-500",
       options.type === "warning" && "warning-snackbar"
     )}
@@ -47,7 +47,7 @@ const AlertTemplate = ({ style, options, message, close }) => (
           )}
           {options.type === "error" && <MdError className="snackbar-icon" />}
         </div>
-        <span className="px-2 snackbar-message">{message}</span>
+        <span className="pl-2 pr-8 text-sm">{message}</span>
       </div>
       <div>
         <MdClose className="snackbar-icon cursor-pointer" onClick={close} />

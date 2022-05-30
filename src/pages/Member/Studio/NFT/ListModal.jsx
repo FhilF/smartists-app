@@ -1,10 +1,21 @@
 import React, { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { IoCloseSharp } from "react-icons/io5";
-import { smartistsContractAddress, StacksNetwork } from "config";
-import { noneCV, someCV, uintCV, PostConditionMode } from "@stacks/transactions";
+import {
+  smartistsContractAddress,
+  StacksNetwork,
+  StacksApiUriWs,
+} from "config";
+import {
+  noneCV,
+  someCV,
+  uintCV,
+  PostConditionMode,
+} from "@stacks/transactions";
 import { openContractCall } from "@stacks/connect";
 import { useAlert } from "react-alert";
+
+import { connectWebSocketClient } from "@stacks/blockchain-api-client";
 
 import { appDetails } from "utils/stacks-util/auth";
 function ListModal(props) {
@@ -18,52 +29,14 @@ function ListModal(props) {
     transactionId,
     setTransactionId,
     isListing,
+    formLoading,
+    setFormLoading,
+    price,
+    setPrice,
+    contractList
   } = props;
 
-  const alert = useAlert();
-  const network = new StacksNetwork();
 
-  const [price, setPrice] = useState("");
-  const [formLoading, setFormLoading] = useState(false);
-  // const [isApprove, setIsApprove] = useState(false);
-  const ContractList = async () => {
-    if (price !== "") {
-      const transactionOptions = {
-        contractAddress: smartistsContractAddress,
-        contractName: "genuine-v1",
-        functionName: "list-in-ustx",
-        functionArgs: [
-          uintCV(parseInt(metadata.id)),
-          uintCV(parseInt(price * 1000000)),
-          // level === 0 ? noneCV() : someCV(uintCV(level)),
-          // stringAsciiCV(`ipfs://${uploadIPFS.data.ipfsData.IpfsHash}`),
-        ],
-        network,
-        appDetails,
-        postConditionMode: PostConditionMode.Deny,
-        postConditions: [],
-        onFinish: (data) => {
-          alert.success(
-            "Successfully placed your transaction. Please for a while."
-          );
-          // navigate(`/${userData.profile.stxAddress.mainnet}/studio/nft`);
-          setIsListingOpen(false);
-          setTransactionId(data.txId);
-          setWaitTransaction(true);
-          console.log("Stacks Transaction:", data.stacksTransaction);
-          console.log("Transaction ID:", data.txId);
-          console.log("Raw transaction:", data.txRaw);
-        },
-        onCancel: () => {
-          setFormLoading(false);
-          console.log("Cancelled");
-        },
-      };
-      await openContractCall(transactionOptions);
-    } else {
-      alert.error("Please fill the up the required details!");
-    }
-  };
   return (
     <Transition.Root show={isListingOpen} as={Fragment}>
       <Dialog
@@ -165,7 +138,7 @@ function ListModal(props) {
                       }}
                       type="number"
                       autoComplete="off"
-                      // disabled={formLoading}
+                      disabled={formLoading}
                     />
                   </div>
                   <div className="w-full">
@@ -206,11 +179,10 @@ function ListModal(props) {
                   <button
                     className="px-8 py-2 text-white shadow rounded-md bg-red-900 w-28 font-medium text-sm"
                     onClick={() => {
-                      ContractList();
+                      contractList();
                     }}
                   >
                     {isListing ? "List" : "Update"}
-                    
                   </button>
                 </div>
               </div>

@@ -6,7 +6,7 @@ import {
   Configuration,
   InfoApi,
   BlocksApi,
-  NonFungibleTokensApi
+  NonFungibleTokensApi,
 } from "@stacks/blockchain-api-client";
 export const nodeEnv = process.env.NODE_ENV;
 
@@ -31,7 +31,9 @@ export const smartistsContractAddress = isMainnet
   ? ""
   : "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
 
-export const assetIdentifiers = ["ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.genuine-v1::Genuine"]
+export const assetIdentifiers = [
+  "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.genuine-v1::Genuine",
+];
 
 export const StacksApiUrl = isMainnet
   ? "https://stacks-node-api.mainnet.stacks.co"
@@ -40,10 +42,10 @@ export const StacksApiUrl = isMainnet
   : "https://stacks-node-api.testnet.stacks.co";
 
 export const StacksApiUriWs = isMainnet
-  ? "wss://stacks-node-api.mainnet.stacks.co"
+  ? "ws://stacks-node-api.mainnet.stacks.co"
   : isMocknet
-  ? "wss://localhost:3999"
-  : "wss://stacks-node-api.testnet.stacks.co";
+  ? "ws://localhost:3999"
+  : "ws://stacks-node-api.testnet.stacks.co";
 
 export const StacksExplorer = isMainnet
   ? "https://explorer.stacks.co"
@@ -51,6 +53,7 @@ export const StacksExplorer = isMainnet
 
 const config = new Configuration({ basePath: StacksApiUrl });
 export const smartContractsApi = new SmartContractsApi(config);
+export const transactionApi = new TransactionsApi(config);
 export const accountsApi = new AccountsApi(config);
 export const nonFungibleTokensApi = new NonFungibleTokensApi(config);
 

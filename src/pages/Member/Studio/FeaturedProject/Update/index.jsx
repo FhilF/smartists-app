@@ -233,7 +233,7 @@ function Update(props) {
         deleteFileFromStorage(media.fileName);
         const newMediaFile = await imageCompression(mediaPreviewFile);
         const fileUploaded = await addFileToStorage(
-          "smartists/project",
+          {dir: "smartists/project"},
           newMediaFile,
           {
             encrypt: false,

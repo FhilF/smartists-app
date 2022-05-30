@@ -191,7 +191,7 @@ export default function ArtworkModal(props) {
       ) {
         imageCompression(mediaFile, previewImageOptions)
           .then((res) => {
-            return addFileToStorage("smartists/featuredWork", res, {
+            return addFileToStorage({dir:"smartists/featuredWork"}, res, {
               encrypt: false,
             });
           })
@@ -219,7 +219,7 @@ export default function ArtworkModal(props) {
             alert.error("There was a problem submitting your form");
           });
       } else {
-        addFileToStorage("smartists/featuredWork", mediaFile, {
+        addFileToStorage({dir: "smartists/featuredWork"}, mediaFile, {
           encrypt: false,
         })
           .then((res) => {

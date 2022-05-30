@@ -4,14 +4,45 @@ import { Storage } from "@stacks/storage";
 
 const storage = new Storage({ userSession });
 
-export const addFileToStorage = (dir, file, options) => {
+function isObject(o) {
+  return o instanceof Object && o.constructor === Object;
+}
+
+export const addFileToStorage = (filename, file, options) => {
   return new Promise(function (myResolve, myReject) {
-    const id = uuid();
-    const fileName = `${dir ? `${dir}/` : null}${id}`;
+    let finalFileName;
+    if (isObject(filename)) {
+      if (filename.dir && !filename.name) {
+        const id = uuid();
+        finalFileName = `${filename.dir}/${id}`;
+      } else if (!filename.dir && filename.name) {
+        finalFileName = filename.name;
+      } else if (filename.dir && filename.name) {
+        finalFileName = `${filename.dir}/${filename.name}`;
+      } else {
+        return myReject("File name missing");
+      }
+      storage
+        .putFile(finalFileName, file, options)
+        .then((res) => {
+          myResolve({ fileName: finalFileName, url: res });
+        })
+        .catch((err) => {
+          console.log(err);
+          myReject(err);
+        });
+    } else {
+      return myReject("File name missing");
+    }
+  });
+};
+
+export const getFileFromStorage = (filename, options) => {
+  return new Promise(function (myResolve, myReject) {
     storage
-      .putFile(fileName, file, options)
+      .getFile(filename, options)
       .then((res) => {
-        myResolve({ fileName, url: res });
+        myResolve(res);
       })
       .catch((err) => {
         console.log(err);
@@ -19,7 +50,6 @@ export const addFileToStorage = (dir, file, options) => {
       });
   });
 };
-
 
 export const deleteFileFromStorage = async (filename) => {
   return new Promise(function (myResolve, myReject) {

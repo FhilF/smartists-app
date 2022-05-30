@@ -215,7 +215,7 @@ export default function ProjectModal(props) {
 
       imageCompression(media, previewImageOptions)
         .then((res) => {
-          return addFileToStorage("smartists/project", res, {
+          return addFileToStorage({ dir: "smartists/project" }, res, {
             encrypt: false,
           });
         })

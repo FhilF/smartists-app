@@ -18,11 +18,11 @@
 
 @import "./variables/palette";
 
-.btn:disabled{
+.btn:disabled {
   cursor: default;
 }
 
-.btn-bg:disabled{
+.btn-bg:disabled {
   background-color: #cccccc;
   color: #666666;
 }
@@ -62,6 +62,17 @@
 }
 
 .bg-thumbnail {
-  background-color: #F2EBEB;
+  background-color: #f2ebeb;
 }
 
+.accordion-desc {
+  p {
+    a {
+      font-weight: 600;
+      color: maroon;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+}

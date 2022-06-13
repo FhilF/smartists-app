@@ -7,6 +7,7 @@ import {
   InfoApi,
   BlocksApi,
   NonFungibleTokensApi,
+  FaucetsApi,
 } from "@stacks/blockchain-api-client";
 export const nodeEnv = process.env.NODE_ENV;
 
@@ -52,6 +53,7 @@ export const StacksExplorer = isMainnet
   : "http://localhost:8000";
 
 const config = new Configuration({ basePath: StacksApiUrl });
+export const faucetApi = new FaucetsApi(config);
 export const smartContractsApi = new SmartContractsApi(config);
 export const transactionApi = new TransactionsApi(config);
 export const accountsApi = new AccountsApi(config);

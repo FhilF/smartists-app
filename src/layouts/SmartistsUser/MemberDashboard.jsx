@@ -324,7 +324,7 @@ function Dashboard(props) {
                                 </p>
                               </div>
 
-                              <div className="mt-2">
+                              {/* <div className="mt-2">
                                 <p
                                   className=" text-red-900 text-sm font-semibold hover:underline cursor-pointer"
                                   onClick={() => {
@@ -333,7 +333,7 @@ function Dashboard(props) {
                                 >
                                   What is this?
                                 </p>
-                              </div>
+                              </div> */}
                             </>
                           )}
                         </div>

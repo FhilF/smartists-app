@@ -1,9 +1,8 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "../pages/LandingPage";
-import TestPage from "../pages/TestPage";
-import InvitationModal from "components/InvitationModal";
-// import GlobalRoutes from "./GlobalRoutes";
+import FAQs from "pages/FAQs";
+import globalRoutes from "routes/GlobalRoutes";
 
 function UserRoutes(props) {
   const { authenticate, setIsNewSignIn } = props;
@@ -14,22 +13,7 @@ function UserRoutes(props) {
           path="/"
           element={<LandingPage setIsNewSignIn={setIsNewSignIn} />}
         />
-        <Route path="/test" element={<TestPage />} />
-        {/* {GlobalRoutes} */}
-        {/* <Route
-          exact
-          path="/"
-          Component
-          render={(routeProps) => (
-            // <LandingPage {...routeProps} authenticate={authenticate} />
-            <div>sss</div>
-          )}
-        /> */}
-        {/* <Route
-          path="/:userIdentity"
-          render={() => <InvitationModal authenticate={authenticate} />}
-        />
-        {GlobalRoutes} */}
+        {globalRoutes.map(component => component)}
       </Routes>
     </>
   );

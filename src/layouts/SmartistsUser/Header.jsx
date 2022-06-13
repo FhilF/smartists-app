@@ -13,7 +13,8 @@ import classNames from "classnames";
 
 function Header(props) {
   const { smartistsUserSession, isMainnet } = props;
-  const walletAddress = smartistsUserSession[isMainnet? "walletAddress" : "walletAddressTestnet"];
+  const walletAddress =
+    smartistsUserSession[isMainnet ? "walletAddress" : "walletAddressTestnet"];
   // console.log();
   const navigate = useNavigate();
   return (
@@ -55,6 +56,39 @@ function Header(props) {
                   Members
                 </a>
               </li>
+              <li className="nav-menu hover:text-gray-900">
+                <a
+                  href="/marketplace"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/marketplace");
+                  }}
+                >
+                  Marketplace
+                </a>
+              </li>
+              <li className="nav-menu hover:text-gray-900">
+                <a
+                  href="/faqs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/faqs");
+                  }}
+                >
+                  FAQs
+                </a>
+              </li>
+              {/* <li className="nav-menu hover:text-gray-900">
+                <a
+                  href="/guides"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/guides");
+                  }}
+                >
+                  Guides
+                </a>
+              </li> */}
             </ul>
           </div>
 

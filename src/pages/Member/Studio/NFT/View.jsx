@@ -69,8 +69,10 @@ import classNames from "classnames";
 import { apiServer } from "config";
 import {
   addFileToStorage,
+  deleteFileFromStorage,
   getFileFromStorage,
 } from "utils/stacks-util/storage";
+import LicenseModal from "./LicenseModal";
 
 const BigNum = require("bn.js");
 
@@ -98,6 +100,8 @@ function View(props) {
   const [isUnlistingPendingTx, setIsUnlistingPendingTx] = useState(false);
   const [isBuyingPendingTx, setIsBuyingPendingTx] = useState(false);
   const [isReleasingPendingTx, setIsReleasingPendingTx] = useState(false);
+  const [isLicensingPendingTx, setIsLicensingPendingTx] = useState(false);
+  const [licenseDetails, setLicenseDetails] = useState(null);
   const [pendingTx, setPendingTx] = useState();
 
   useEffect(() => {
@@ -110,6 +114,19 @@ function View(props) {
   }, []);
 
   useEffect(() => {
+    if (metadata) {
+      getGenuineLicenseDetails();
+      if (
+        metadata.author !== walletAddress &&
+        metadata.owner === walletAddress
+      ) {
+        getPendingListTx(
+          "buy-license-in-ustx",
+          setIsLicensingPendingTx,
+          updateListingDetails
+        );
+      }
+    }
     if (
       metadata &&
       metadata.listingDetails === "none" &&
@@ -149,7 +166,7 @@ function View(props) {
       getPendingListTx(
         "buy-in-ustx",
         setIsBuyingPendingTx,
-        updatePendingSaleDetails
+        getGenuineLicenseDetails
       );
       return true;
     }
@@ -357,17 +374,15 @@ function View(props) {
       const pendingTx = await getMempoolTx();
       const filteredTx = pendingTx.results.filter(
         (tx) =>
-          (tx.tx_status === "pending" &&
-            tx.sender_address === walletAddress &&
-            tx.contract_call.function_args !== null &&
-            tx.contract_call.function_args.length > 0 &&
-            tx.contract_call.function_args[0].name === "genuine-id" &&
-            tx.contract_call.function_args[0].repr === cvToString(uintCV(id)) &&
-            tx.contract_call.function_name === "unlist-in-ustx") ||
-          tx.contract_call.function_name === "list-in-ustx"
+          tx.tx_status === "pending" &&
+          tx.sender_address === walletAddress &&
+          tx.contract_call.function_args !== null &&
+          tx.contract_call.function_args.length > 0 &&
+          tx.contract_call.function_args[0].name === "genuine-id" &&
+          tx.contract_call.function_args[0].repr === cvToString(uintCV(id)) &&
+          (tx.contract_call.function_name === "unlist-in-ustx" ||
+            tx.contract_call.function_name === "list-in-ustx")
       );
-
-      console.log(filteredTx);
 
       if (filteredTx.length > 0) {
         const firstTx = filteredTx.reduce(function (prev, curr) {
@@ -468,7 +483,7 @@ function View(props) {
           id,
           author: cvToString(metadataCV["author"]),
           createdAt: cvToString(metadataCV["created-at"]).substr(1),
-          level: cvToString(metadataCV["level"]).substr(1),
+          level: parseInt(cvToString(metadataCV["level"]).substr(1)),
           metadataUri: metadataCV["metadata-uri"].data,
           listingDetails: listing,
           owner: cvToString(ownerCv.value.value),
@@ -492,6 +507,102 @@ function View(props) {
       setMetadata(null);
       setIsLoading(false);
       return false;
+    }
+  };
+
+  const getGenuineLicenseDetails = async () => {
+    if (metadata) {
+      try {
+        const licensingLevelDetails =
+          await smartContractsApi.callReadOnlyFunction({
+            contractAddress: smartistsContractAddress,
+            contractName: assetContractName,
+            functionName: "get-license-level-details",
+            readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
+              sender: walletAddress,
+              arguments: [cvToHex(uintCV(metadata.level))],
+            }),
+          });
+        let levelDetailsCv = deserializeCV(
+          Buffer.from(licensingLevelDetails.result.substr(2), "hex")
+        );
+        const levelDetails =
+          "value" in levelDetailsCv
+            ? {
+                level: metadata.level,
+                price: parseInt(
+                  cvToString(levelDetailsCv.value.data.price).substr(1)
+                ),
+                rightsGranted: {
+                  display: JSON.parse(
+                    cvToString(
+                      levelDetailsCv.value.data["rights-granted"].data.display
+                    )
+                  ),
+                  copy: JSON.parse(
+                    cvToString(
+                      levelDetailsCv.value.data["rights-granted"].data.copy
+                    )
+                  ),
+                  adapt: JSON.parse(
+                    cvToString(
+                      levelDetailsCv.value.data["rights-granted"].data.adapt
+                    )
+                  ),
+                  distribution: JSON.parse(
+                    cvToString(
+                      levelDetailsCv.value.data["rights-granted"].data
+                        .distribution
+                    )
+                  ),
+                },
+              }
+            : cvToString(levelDetailsCv);
+
+        let licenseDetails;
+        if (metadata.author !== walletAddress) {
+          const licenseDetailsContractCv =
+            await smartContractsApi.callReadOnlyFunction({
+              contractAddress: smartistsContractAddress,
+              contractName: assetContractName,
+              functionName: "get-genuine-license-details",
+              readOnlyFunctionArgs: ReadOnlyFunctionArgsFromJSON({
+                sender: walletAddress,
+                arguments: [cvToHex(uintCV(metadata.id))],
+              }),
+            });
+
+          let licenseDetailsCv = deserializeCV(
+            Buffer.from(licenseDetailsContractCv.result.substr(2), "hex")
+          );
+          licenseDetails =
+            "value" in licenseDetailsCv
+              ? {
+                  author: cvToString(licenseDetailsCv.value.data["author"]),
+                  licensee: cvToString(licenseDetailsCv.value.data["licensee"]),
+                  createdAt: parseInt(
+                    cvToString(
+                      licenseDetailsCv.value.data["created-at"]
+                    ).substr(1)
+                  ),
+                  expireAt: parseInt(
+                    cvToString(licenseDetailsCv.value.data["expire-at"]).substr(
+                      1
+                    )
+                  ),
+                  updatedAt: parseInt(
+                    cvToString(
+                      licenseDetailsCv.value.data["updated-at"]
+                    ).substr(1)
+                  ),
+                }
+              : {};
+        }
+        setLicenseDetails({ ...levelDetails, ...licenseDetails });
+      } catch (error) {
+        setLicenseDetails(null);
+        console.log(error);
+      }
     }
   };
 
@@ -534,6 +645,10 @@ function View(props) {
               updatePendingSaleDetails={updatePendingSaleDetails}
               setIsReleasingPendingTx={setIsReleasingPendingTx}
               isReleasingPendingTx={isReleasingPendingTx}
+              isLicensingPendingTx={isLicensingPendingTx}
+              setIsLicensingPendingTx={setIsLicensingPendingTx}
+              licenseDetails={licenseDetails}
+              getGenuineLicenseDetails={getGenuineLicenseDetails}
             />
           )
         ) : (
@@ -593,18 +708,24 @@ const Content = (props) => {
     updatePendingSaleDetails,
     setIsReleasingPendingTx,
     isReleasingPendingTx,
+    isLicensingPendingTx,
+    setIsLicensingPendingTx,
+    licenseDetails,
+    getGenuineLicenseDetails,
   } = props;
   // console.log(metadata);
 
   const [isListingOpen, setIsListingOpen] = useState(false);
+  const [isLicensingOpen, setIsLicensingOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [price, setPrice] = useState("");
 
   const [isFileVerified, setIsFileVerified] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
-  const [isLicensing, setIsLicensing] = useState(false);
+  const [isBuyingLicense, setIsBuyingLicense] = useState(false);
 
   const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
+  const [isProcessingLicensing, setIsProcessingLicensing] = useState(false);
 
   useEffect(() => {
     const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
@@ -616,7 +737,7 @@ const Content = (props) => {
           parsedData.filter(
             (nft) =>
               nft.fileHash === metadata.file_hash &&
-              nft.fileName === metadata.file_name_owner_copy
+              nft.fileName === metadata.file_name_personal_copy
           ).length > 0
         ) {
           setIsFileVerified(true);
@@ -771,26 +892,23 @@ const Content = (props) => {
       try {
         const checkFile = async () => {
           try {
-            const ownerCopy = await getFileFromStorage(
-              // metadata.file_name_owner_copy,
-              metadata.author === walletAddress
-                ? metadata.file_name_author_copy
-                : metadata.file_name_owner_copy,
+            const personalCopy = await getFileFromStorage(
+              metadata.file_name_personal_copy,
               {
                 decrypt: true,
               }
             );
-            return ownerCopy;
+            return personalCopy;
           } catch (error) {
             return null;
           }
         };
-        const ownerCopy = await checkFile();
+        const personalCopy = await checkFile();
 
         if (
-          !ownerCopy ||
-          !ownerCopy.buffer ||
-          sha256(ownerCopy.buffer) !== metadata.file_hash
+          !personalCopy ||
+          !personalCopy.buffer ||
+          sha256(personalCopy.buffer) !== metadata.file_hash
         ) {
           console.log("missing from storage");
           const localStorageNFT = localStorage.getItem(
@@ -808,7 +926,7 @@ const Content = (props) => {
             const verifiedList = nftList.filter(
               (nft) =>
                 nft.fileHash !== metadata.file_hash &&
-                nft.fileName !== metadata.file_name_owner_copy
+                nft.fileName !== metadata.file_name_personal_copy
             );
             localStorage.setItem(
               "memberNftVerifiedFiles",
@@ -878,7 +996,7 @@ const Content = (props) => {
           const verifiedList = nftList.filter(
             (nft) =>
               nft.fileHash !== metadata.file_hash &&
-              nft.fileName !== metadata.file_name_owner_copy
+              nft.fileName !== metadata.file_name_personal_copy
           );
           localStorage.setItem(
             "memberNftVerifiedFiles",
@@ -898,29 +1016,7 @@ const Content = (props) => {
         console.log("Raw transaction:", data.txRaw);
       },
       onCancel: () => {
-        const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
-        let nftList = [];
-        if (localStorageNFT) {
-          const parsedData = JSON.parse(localStorageNFT);
-          if (parsedData.constructor === Array) {
-            nftList = [...JSON.parse(localStorageNFT)];
-          }
-        }
-
-        if (nftList.length !== 0) {
-          const verifiedList = nftList.filter(
-            (nft) =>
-              nft.fileHash !== metadata.file_hash &&
-              nft.fileName !== metadata.file_name_owner_copy
-          );
-          localStorage.setItem(
-            "memberNftVerifiedFiles",
-            JSON.stringify(verifiedList)
-          );
-        }
-        setIsFileVerified(false);
         setIsProcessingTransaction(false);
-        alert.info("Please verify your file again before transacting");
         console.log("Cancelled");
       },
     };
@@ -928,26 +1024,23 @@ const Content = (props) => {
     try {
       const checkFile = async () => {
         try {
-          const ownerCopy = await getFileFromStorage(
-            // metadata.file_name_owner_copy,
-            metadata.author === walletAddress
-              ? metadata.file_name_author_copy
-              : metadata.file_name_owner_copy,
+          const personalCopy = await getFileFromStorage(
+            metadata.file_name_personal_copy,
             {
               decrypt: true,
             }
           );
-          return ownerCopy;
+          return personalCopy;
         } catch (error) {
           return null;
         }
       };
-      const ownerCopy = await checkFile();
+      const personalCopy = await checkFile();
 
       if (
-        !ownerCopy ||
-        !ownerCopy.buffer ||
-        sha256(ownerCopy.buffer) !== metadata.file_hash
+        !personalCopy ||
+        !personalCopy.buffer ||
+        sha256(personalCopy.buffer) !== metadata.file_hash
       ) {
         console.log("missing from storage");
         const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
@@ -963,7 +1056,7 @@ const Content = (props) => {
           const verifiedList = nftList.filter(
             (nft) =>
               nft.fileHash !== metadata.file_hash &&
-              nft.fileName !== metadata.file_name_owner_copy
+              nft.fileName !== metadata.file_name_personal_copy
           );
           localStorage.setItem(
             "memberNftVerifiedFiles",
@@ -979,9 +1072,11 @@ const Content = (props) => {
         );
         newOwnerPublicKey = newOwnerPublicKey.data.SmartistsUser.publicKey;
 
+        await deleteFileFromStorage(metadata.file_name);
+
         await addFileToStorage(
-          { name: metadata.file_name_owner_copy },
-          ownerCopy.buffer,
+          { name: metadata.file_name },
+          personalCopy.buffer,
           {
             encrypt: newOwnerPublicKey,
           }
@@ -1013,7 +1108,7 @@ const Content = (props) => {
         nftList.filter(
           (nft) =>
             nft.fileHash === metadata.file_hash &&
-            nft.fileName === metadata.file_name_owner_copy
+            nft.fileName === metadata.file_name_personal_copy
         ).length > 0
       ) {
         setIsFileVerified(true);
@@ -1026,30 +1121,30 @@ const Content = (props) => {
     try {
       const checkFile = async () => {
         try {
-          const ownerCopy = await getFileFromStorage(
-            metadata.file_name_owner_copy,
+          const personalCopy = await getFileFromStorage(
+            metadata.file_name_personal_copy,
             {
               decrypt: true,
             }
           );
-          return ownerCopy;
+          return personalCopy;
         } catch (error) {
           return null;
         }
       };
 
-      const ownerCopy = await checkFile();
+      const personalCopy = await checkFile();
       if (
-        ownerCopy &&
-        ownerCopy.buffer &&
-        sha256(ownerCopy.buffer) === metadata.file_hash
+        personalCopy &&
+        personalCopy.buffer &&
+        sha256(personalCopy.buffer) === metadata.file_hash
       ) {
         localStorage.setItem(
           "memberNftVerifiedFiles",
           JSON.stringify([
             ...nftList,
             {
-              fileName: metadata.file_name_owner_copy,
+              fileName: metadata.file_name_personal_copy,
               fileHash: metadata.file_hash,
               owner: metadata.owner,
               verifiedAt: Date.now(),
@@ -1089,7 +1184,7 @@ const Content = (props) => {
       const checkFromLastOwner = async () => {
         try {
           const encryptedFile = await axios.get(
-            `https://gaia.blockstack.org/hub/${gaiaReadUrl}/${metadata.file_name_owner_copy}`
+            `https://gaia.blockstack.org/hub/${gaiaReadUrl}/${metadata.file_name}`
           );
           return encryptedFile.data;
         } catch (error) {
@@ -1118,19 +1213,23 @@ const Content = (props) => {
       }
 
       await addFileToStorage(
-        { name: metadata.file_name_owner_copy },
+        { name: metadata.file_name_personal_copy },
         content.buffer,
         {
           encrypt: true,
         }
       );
 
+      await addFileToStorage({ name: metadata.file_name }, content.buffer, {
+        encrypt: true,
+      });
+
       localStorage.setItem(
         "memberNftVerifiedFiles",
         JSON.stringify([
           ...nftList,
           {
-            fileName: metadata.file_name_owner_copy,
+            fileName: metadata.file_name_personal_copy,
             fileHash: metadata.file_hash,
             owner: metadata.owner,
             verifiedAt: Date.now(),
@@ -1153,26 +1252,24 @@ const Content = (props) => {
     try {
       const checkFile = async () => {
         try {
-          const ownerCopy = await getFileFromStorage(
-            // metadata.file_name_owner_copy,
-            metadata.author === walletAddress
-              ? metadata.file_name_author_copy
-              : metadata.file_name_owner_copy,
+          const personalCopy = await getFileFromStorage(
+            metadata.file_name_personal_copy,
             {
               decrypt: true,
             }
           );
-          return ownerCopy;
+          return personalCopy;
         } catch (error) {
           return null;
         }
       };
-      const ownerCopy = await checkFile();
+      const personalCopy = await checkFile();
+      console.log(personalCopy);
 
       if (
-        !ownerCopy ||
-        !ownerCopy.buffer ||
-        sha256(ownerCopy.buffer) !== metadata.file_hash
+        !personalCopy ||
+        !personalCopy.buffer ||
+        sha256(personalCopy.buffer) !== metadata.file_hash
       ) {
         console.log("missing from storage");
         const localStorageNFT = localStorage.getItem("memberNftVerifiedFiles");
@@ -1188,7 +1285,7 @@ const Content = (props) => {
           const verifiedList = nftList.filter(
             (nft) =>
               nft.fileHash !== metadata.file_hash &&
-              nft.fileName !== metadata.file_name_owner_copy
+              nft.fileName !== metadata.file_name_personal_copy
           );
           localStorage.setItem(
             "memberNftVerifiedFiles",
@@ -1199,7 +1296,7 @@ const Content = (props) => {
         setIsFileVerified(false);
         alert.error("Please verify your file");
       } else {
-        const fileBlob = new Blob([ownerCopy.buffer], {
+        const fileBlob = new Blob([personalCopy.buffer], {
           type: metadata.file_mime_type,
         });
         const url = window.URL.createObjectURL(fileBlob);
@@ -1208,7 +1305,7 @@ const Content = (props) => {
         link.href = url;
         link.setAttribute(
           "download",
-          metadata.file_name_owner_copy.replace("smartists/nft/", "")
+          metadata.file_name_personal_copy.replace("smartists/nft/", "")
         );
 
         // Append to html link element page
@@ -1218,11 +1315,67 @@ const Content = (props) => {
         setIsLoadingFile(false);
       }
     } catch (error) {
+      console.log(error);
       setIsLoadingFile(false);
       setIsFileVerified(false);
       alert.error("Please verify your file");
     }
   };
+
+  const contractBuyLicense = async () => {
+    const transactionOptions = {
+      contractAddress: smartistsContractAddress,
+      contractName: assetContractName,
+      functionName: "buy-license-in-ustx",
+      functionArgs: [uintCV(parseInt(metadata.id))],
+      network,
+      appDetails,
+      postConditionMode: PostConditionMode.Deny,
+      postConditions: [
+        makeStandardSTXPostCondition(
+          walletAddress,
+          FungibleConditionCode.Equal,
+          new BigNum(parseInt(licenseDetails.price))
+        ),
+      ],
+      onFinish: (data) => {
+        alert.success(
+          "Successfully placed your transaction. Please for a while."
+        );
+        setIsListingOpen(false);
+        setTransactionId(data.txId);
+        setWaitTransaction(true);
+        trackTransaction(
+          data.txId,
+          setIsLicensingPendingTx,
+          getGenuineLicenseDetails
+        );
+        console.log("Stacks Transaction:", data.stacksTransaction);
+        console.log("Transaction ID:", data.txId);
+        console.log("Raw transaction:", data.txRaw);
+      },
+      onCancel: () => {
+        alert.info("Please verify your file again before transacting");
+        console.log("Cancelled");
+      },
+    };
+
+    try {
+      await openContractCall(transactionOptions);
+    } catch (error) {
+      console.log(error);
+      setIsProcessingTransaction(false);
+      alert.error("There was an error processing your request");
+    }
+  };
+
+  useEffect(() => {
+    if (licenseDetails) {
+      // const test = Object.keys(licenseDetails.rightsGranted).filter(function (key) {
+      //   return licenseDetails.rightsGranted[key];
+      // });
+    }
+  }, [licenseDetails]);
 
   return (
     <div className="w-full">
@@ -1241,6 +1394,15 @@ const Content = (props) => {
           <p className="text-4xl font-medium leading-10 text-gray-800">
             {`#${metadata.id} - ${metadata.name}`}{" "}
           </p>
+
+          {pendingSaleDetails && (
+            <p className="text-base text-gray-600 mt-8">
+              Sold for{" "}
+              <span className="text-gray-800 font-semibold">
+                {pendingSaleDetails.price / 1000000} STX
+              </span>
+            </p>
+          )}
           <p className="text-base text-gray-600 mt-8">
             {metadata.listingDetails === "none" ? (
               metadata.owner ===
@@ -1335,19 +1497,100 @@ const Content = (props) => {
                     </li>
                     {walletAddress !== metadata.author ? (
                       <>
-                        <li className="p-2 flex items-center hover:bg-gray-100 cursor-pointer">
-                          <span
+                        {licenseDetails && "expireAt" in licenseDetails ? (
+                          <li
                             className={classNames(
-                              "text-md",
-                              false ? "text-gray-400" : "text-red-900"
+                              "p-2 flex items-center",
+                              isLicensingPendingTx
+                                ? "bg-gray-200"
+                                : "hover:bg-gray-100 cursor-pointer"
                             )}
+                            onClick={() => {
+                              if (isLicensingPendingTx) {
+                                return true;
+                              }
+                              // setIsBuyingLicense(true);
+                              // setIsLicensingOpen(true);
+                            }}
                           >
-                            <BsKey />
-                          </span>
-                          <span className="ml-4 text-gray-600 font-medium flex-1">
-                            Buy License
-                          </span>
-                        </li>
+                            <span
+                              className={classNames(
+                                "text-md",
+                                isLicensingPendingTx
+                                  ? "text-gray-400"
+                                  : "text-red-900"
+                              )}
+                            >
+                              <BsKey />
+                            </span>
+                            <span className="ml-4 text-gray-600 font-medium flex-1">
+                              {isLicensingPendingTx
+                                ? "Renew License Pending..."
+                                : "Renew License"}
+                            </span>
+                            <span>
+                              {isLicensingPendingTx ? (
+                                <Oval
+                                  ariaLabel="loading-indicator"
+                                  height={24}
+                                  width={24}
+                                  strokeWidth={5}
+                                  strokeWidthSecondary={1}
+                                  color="blue"
+                                  secondaryColor="gray"
+                                  className="mr-8"
+                                />
+                              ) : null}
+                            </span>
+                          </li>
+                        ) : metadata.level === 1 ? null : (
+                          <li
+                            className={classNames(
+                              "p-2 flex items-center",
+                              isLicensingPendingTx
+                                ? "bg-gray-200"
+                                : "hover:bg-gray-100 cursor-pointer"
+                            )}
+                            onClick={() => {
+                              if (isLicensingPendingTx) {
+                                return true;
+                              }
+                              setIsBuyingLicense(true);
+                              setIsLicensingOpen(true);
+                            }}
+                          >
+                            <span
+                              className={classNames(
+                                "text-md",
+                                isLicensingPendingTx
+                                  ? "text-gray-400"
+                                  : "text-red-900"
+                              )}
+                            >
+                              <BsKey />
+                            </span>
+                            <span className="ml-4 text-gray-600 font-medium flex-1">
+                              {isLicensingPendingTx
+                                ? "Buy License Pending..."
+                                : "Buy License"}
+                            </span>
+                            <span>
+                              {isLicensingPendingTx ? (
+                                <Oval
+                                  ariaLabel="loading-indicator"
+                                  height={24}
+                                  width={24}
+                                  strokeWidth={5}
+                                  strokeWidthSecondary={1}
+                                  color="blue"
+                                  secondaryColor="gray"
+                                  className="mr-8"
+                                />
+                              ) : null}
+                            </span>
+                          </li>
+                        )}
+
                         {isFileVerified ? (
                           <li
                             className={classNames(
@@ -1436,7 +1679,52 @@ const Content = (props) => {
                           </li>
                         )}
                       </>
-                    ) : null}
+                    ) : (
+                      <>
+                        <li
+                          className={classNames(
+                            "p-2 flex items-center",
+                            isLoadingFile
+                              ? "bg-gray-200"
+                              : "hover:bg-gray-100 cursor-pointer"
+                          )}
+                          onClick={() => {
+                            if (isLoadingFile) {
+                              return true;
+                            }
+                            downloadFile();
+                          }}
+                        >
+                          <span
+                            className={classNames(
+                              "text-md",
+                              isLoadingFile ? "text-gray-400" : "text-red-900"
+                            )}
+                          >
+                            <BsDownload />
+                          </span>
+                          <span className="ml-4 text-gray-600 font-medium flex-1">
+                            {isLoadingFile
+                              ? "Downloading File..."
+                              : "Download File"}
+                          </span>
+                          <span>
+                            {isLoadingFile ? (
+                              <Oval
+                                ariaLabel="loading-indicator"
+                                height={24}
+                                width={24}
+                                strokeWidth={5}
+                                strokeWidthSecondary={1}
+                                color="blue"
+                                secondaryColor="gray"
+                                className="mr-8"
+                              />
+                            ) : null}
+                          </span>
+                        </li>
+                      </>
+                    )}
                   </>
                 )}
 
@@ -1715,201 +2003,98 @@ const Content = (props) => {
                       </span>
                     </li>
 
-                    {isFileVerified ? (
-                      <li
-                        className={classNames(
-                          "p-2 flex items-center",
-                          isLoadingFile
-                            ? "bg-gray-200"
-                            : "hover:bg-gray-100 cursor-pointer"
-                        )}
-                        onClick={() => {
-                          if (isLoadingFile) {
-                            return true;
-                          }
-                          downloadFile();
-                        }}
-                      >
-                        <span
+                    {metadata.author !== walletAddress ? (
+                      isFileVerified ? (
+                        <li
                           className={classNames(
-                            "text-md",
-                            isLoadingFile ? "text-gray-400" : "text-red-900"
+                            "p-2 flex items-center",
+                            isLoadingFile
+                              ? "bg-gray-200"
+                              : "hover:bg-gray-100 cursor-pointer"
                           )}
+                          onClick={() => {
+                            if (isLoadingFile) {
+                              return true;
+                            }
+                            downloadFile();
+                          }}
                         >
-                          <BsDownload />
-                        </span>
-                        <span className="ml-4 text-gray-600 font-medium flex-1">
-                          {isLoadingFile
-                            ? "Downloading File..."
-                            : "Download File"}
-                        </span>
-                        <span>
-                          {isLoadingFile ? (
-                            <Oval
-                              ariaLabel="loading-indicator"
-                              height={24}
-                              width={24}
-                              strokeWidth={5}
-                              strokeWidthSecondary={1}
-                              color="blue"
-                              secondaryColor="gray"
-                              className="mr-8"
-                            />
-                          ) : null}
-                        </span>
-                      </li>
-                    ) : (
-                      <li
-                        className={classNames(
-                          "p-2 flex items-center",
-                          isLoadingFile
-                            ? "bg-gray-200"
-                            : "hover:bg-gray-100 cursor-pointer"
-                        )}
-                        onClick={() => {
-                          if (isLoadingFile) {
-                            return true;
-                          }
-                          verifyFile();
-                        }}
-                      >
-                        <span
+                          <span
+                            className={classNames(
+                              "text-md",
+                              isLoadingFile ? "text-gray-400" : "text-red-900"
+                            )}
+                          >
+                            <BsDownload />
+                          </span>
+                          <span className="ml-4 text-gray-600 font-medium flex-1">
+                            {isLoadingFile
+                              ? "Downloading File..."
+                              : "Download File"}
+                          </span>
+                          <span>
+                            {isLoadingFile ? (
+                              <Oval
+                                ariaLabel="loading-indicator"
+                                height={24}
+                                width={24}
+                                strokeWidth={5}
+                                strokeWidthSecondary={1}
+                                color="blue"
+                                secondaryColor="gray"
+                                className="mr-8"
+                              />
+                            ) : null}
+                          </span>
+                        </li>
+                      ) : (
+                        <li
                           className={classNames(
-                            "text-md",
-                            isLoadingFile ? "text-gray-400" : "text-red-900"
+                            "p-2 flex items-center",
+                            isLoadingFile
+                              ? "bg-gray-200"
+                              : "hover:bg-gray-100 cursor-pointer"
                           )}
+                          onClick={() => {
+                            if (isLoadingFile) {
+                              return true;
+                            }
+                            verifyFile();
+                          }}
                         >
-                          <BsDownload />
-                        </span>
-                        <span className="ml-4 text-gray-600 font-medium flex-1">
-                          {isLoadingFile ? "Verifying File..." : "Verify File"}
-                        </span>
-                        <span>
-                          {isLoadingFile ? (
-                            <Oval
-                              ariaLabel="loading-indicator"
-                              height={24}
-                              width={24}
-                              strokeWidth={5}
-                              strokeWidthSecondary={1}
-                              color="blue"
-                              secondaryColor="gray"
-                              className="mr-8"
-                            />
-                          ) : null}
-                        </span>
-                      </li>
-                    )}
+                          <span
+                            className={classNames(
+                              "text-md",
+                              isLoadingFile ? "text-gray-400" : "text-red-900"
+                            )}
+                          >
+                            <BsDownload />
+                          </span>
+                          <span className="ml-4 text-gray-600 font-medium flex-1">
+                            {isLoadingFile
+                              ? "Verifying File..."
+                              : "Verify File"}
+                          </span>
+                          <span>
+                            {isLoadingFile ? (
+                              <Oval
+                                ariaLabel="loading-indicator"
+                                height={24}
+                                width={24}
+                                strokeWidth={5}
+                                strokeWidthSecondary={1}
+                                color="blue"
+                                secondaryColor="gray"
+                                className="mr-8"
+                              />
+                            ) : null}
+                          </span>
+                        </li>
+                      )
+                    ) : null}
                   </>
                 )}
-
-              {/* <li className="p-2 flex items-center hover:bg-gray-100 cursor-pointer">
-                <span
-                  className={classNames(
-                    "text-md",
-                    true ? "text-gray-400" : "text-red-900"
-                  )}
-                >
-                  <IoSyncOutline />
-                </span>
-                <span className="ml-4 text-gray-600 font-medium flex-1">
-                  Renew License
-                </span>
-              </li> */}
             </ul>
-            {/* {metadata.listingDetails === "none" ? (
-              walletAddress === metadata.owner ? null : null
-            ) : walletAddress === metadata.owner ? (
-              <div className="flex">
-                <button
-                  className={classNames(
-                    isListingPendingTx ? "px-4" : "px-8",
-                    "py-2 text-white shadow rounded-md bg-red-900 h-12 font-medium flex items-center justify-center disabled:bg-gray-400"
-                  )}
-                  disabled={isListingPendingTx}
-                  onClick={() => {
-                    setIsListing(false);
-                    setIsListingOpen(true);
-                  }}
-                >
-                  {isListingPendingTx && (
-                    <Oval
-                      ariaLabel="loading-indicator"
-                      height={24}
-                      width={24}
-                      strokeWidth={5}
-                      strokeWidthSecondary={1}
-                      color="blue"
-                      secondaryColor="white"
-                      className="mr-8"
-                    />
-                  )}
-                  {isListingPendingTx ? (
-                    <span className="ml-1">Updating Price...</span>
-                  ) : (
-                    " Update Price"
-                  )}
-                </button>
-
-                <button
-                  className={classNames(
-                    isUnlistingPendingTx ? "px-4" : "px-8",
-                    "py-2 text-gray-600 shadow rounded-md h-12 font-medium flex items-center justify-center"
-                  )}
-                  disabled={isUnlistingPendingTx}
-                  onClick={() => {
-                    contractUnlist();
-                  }}
-                >
-                  {isUnlistingPendingTx && (
-                    <Oval
-                      ariaLabel="loading-indicator"
-                      height={24}
-                      width={24}
-                      strokeWidth={5}
-                      strokeWidthSecondary={1}
-                      color="blue"
-                      secondaryColor="white"
-                      className="mr-8"
-                    />
-                  )}
-                  {isUnlistingPendingTx ? (
-                    <span className="ml-1">Unlist Pending...</span>
-                  ) : (
-                    "Unlist"
-                  )}
-                </button>
-              </div>
-            ) : (
-              <button
-                className={classNames(
-                  isBuyingPendingTx ? "px-4" : "px-8",
-                  "py-2 text-white shadow rounded-md bg-red-900 h-12 font-medium flex items-center justify-center disabled:bg-gray-400"
-                )}
-                disabled={isBuyingPendingTx}
-                onClick={() => {
-                  contractBuy();
-                }}
-              >
-                {isBuyingPendingTx && (
-                  <Oval
-                    ariaLabel="loading-indicator"
-                    height={24}
-                    width={24}
-                    strokeWidth={5}
-                    strokeWidthSecondary={1}
-                    color="blue"
-                    secondaryColor="white"
-                    className="mr-8"
-                  />
-                )}
-                {isBuyingPendingTx ? (
-                  <span className="ml-1">Buy Pending...</span>
-                ) : (
-                  "Buy"
-                )}
-              </button>
-            )} */}
           </div>
 
           <hr className="mt-12" />
@@ -1921,6 +2106,17 @@ const Content = (props) => {
               pendingSaleDetails ? (
                 <>
                   <p className="font-normal text-xs text-gray-500 leading-6">
+                    Bought by
+                  </p>
+                  <p
+                    className="font-medium text-xs text-gray-600 leading-6 hover:underline cursor-pointer"
+                    onClick={() => {
+                      navigate(`/${pendingSaleDetails.newOwner}`);
+                    }}
+                  >
+                    {pendingSaleDetails.newOwner}
+                  </p>
+                  <p className="font-normal text-xs text-gray-500 leading-6 mt-2">
                     Owned by
                   </p>
                   <p
@@ -1970,7 +2166,7 @@ const Content = (props) => {
           {metadata.file_mime_type.startsWith("image/") && (
             <img
               className="w-full h-auto object-contain max-h-75vh rounded-lg"
-              src={`https://smartists.mypinata.cloud/ipfs/${metadata.image.replace(
+              src={`https://smartists.mypinata.cloud/ipfs/${metadata.thumbnail.replace(
                 "ipfs://",
                 ""
               )}`}
@@ -1980,14 +2176,6 @@ const Content = (props) => {
 
           <div className="mt-6">
             <div className="flex flex-col space-y-4 items-start justify-start">
-              <div>
-                <p className="font-normal text-xs text-gray-500 leading-6">
-                  Licensing level
-                </p>
-                <p className="font-semibold text-sm text-gray-600 leading-6">
-                  {metadata.level}
-                </p>
-              </div>
               <div>
                 <p className="font-normal text-xs text-gray-500 leading-6">
                   Description
@@ -2003,6 +2191,90 @@ const Content = (props) => {
                 <p className="font-semibold text-sm text-gray-600 leading-6">
                   {metadata.author}
                 </p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <hr className="mt-8" />
+            <div className="mt-4">
+              <p className="font-medium text-lg text-gray-600">
+                License details
+              </p>
+              <div className="flex flex-col space-y-4 items-start justify-start mt-4">
+                <div>
+                  <p className="font-normal text-xs text-gray-500 leading-6">
+                    Licensing level
+                  </p>
+                  <p className="font-semibold text-sm text-gray-600 leading-6">
+                    {metadata.level}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-normal text-xs text-gray-500 leading-6">
+                    Rights granted
+                  </p>
+                  <p className="font-semibold text-sm text-gray-600 leading-6">
+                    {licenseDetails &&
+                      Object.keys(licenseDetails.rightsGranted)
+                        .filter(function (key) {
+                          return licenseDetails.rightsGranted[key];
+                        })
+                        .join(", ")}
+                  </p>
+                </div>
+                {metadata.owner === walletAddress && (
+                  <div>
+                    <p className="font-normal text-xs text-gray-500 leading-6">
+                      License status
+                    </p>
+                    <p className="font-semibold text-sm text-gray-600 leading-6">
+                      {metadata.author !== walletAddress ? (
+                        licenseDetails && "expireAt" in licenseDetails ? (
+                          licenseDetails.expireAt >
+                          Math.floor(Date.now() / 1000) ? (
+                            <span className=" text-green-700">Active</span>
+                          ) : (
+                            "Expired"
+                          )
+                        ) : metadata.level === 1 ? (
+                          "Level 1 cannot be licensed"
+                        ) : (
+                          "Available for licensing"
+                        )
+                      ) : (
+                        "License not available for authors"
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {metadata.owner === walletAddress &&
+                  metadata.author !== walletAddress &&
+                  licenseDetails &&
+                  "expireAt" in licenseDetails && (
+                    <>
+                      <div>
+                        <p className="font-normal text-xs text-gray-500 leading-6">
+                          Expire at
+                        </p>
+                        <p className="font-semibold text-sm text-gray-600 leading-6">
+                          {new Date(
+                            licenseDetails.expireAt * 1000
+                          ).toUTCString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-normal text-xs text-gray-500 leading-6">
+                          Licensed at
+                        </p>
+                        <p className="font-semibold text-sm text-gray-600 leading-6">
+                          {new Date(
+                            licenseDetails.updatedAt * 1000
+                          ).toUTCString()}
+                        </p>
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
           </div>
@@ -2023,6 +2295,17 @@ const Content = (props) => {
         price={price}
         setPrice={setPrice}
         contractList={contractList}
+        isProcessingTransaction={isProcessingTransaction}
+      />
+      <LicenseModal
+        isLicensingOpen={isLicensingOpen}
+        setIsLicensingOpen={setIsLicensingOpen}
+        metadata={metadata}
+        assetContractName={assetContractName}
+        isBuyingLicense={isBuyingLicense}
+        walletAddress={walletAddress}
+        licenseDetails={licenseDetails}
+        contractBuyLicense={contractBuyLicense}
       />
     </div>
   );

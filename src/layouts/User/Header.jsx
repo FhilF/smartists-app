@@ -30,15 +30,26 @@ function Header(props) {
           <ul className="nav-menu-list text-gray-600 hover:text-gray-900">
             <li className="nav-menu hover:text-gray-900">
               <a
-                href="/documentation"
+                href="/faqs"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("/documentation");
+                  navigate("/faqs");
                 }}
               >
-                Documentation
+                FAQs
               </a>
             </li>
+            {/* <li className="nav-menu hover:text-gray-900">
+              <a
+                href="/guides"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/guides");
+                }}
+              >
+                Guides
+              </a>
+            </li> */}
             <li className="nav-menu hover:text-gray-900">
               <a
                 href="https://www.smartists.net/"

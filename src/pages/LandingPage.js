@@ -154,7 +154,7 @@ function LandingPage(props) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2">
+      {/* <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2">
         <div>
           <ul className="list-none flex">
             <li className="mr-2"><button type="button" className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 hover:text-red-900 focus:outline-none">
@@ -175,7 +175,7 @@ function LandingPage(props) {
         <div>
           <p className="text-gray-500 lg:text-right text-sm">SMARTISTS is built on Stacks and secured by Bitcoin</p>
         </div>
-      </div>
+      </div> */}
 
     </div>
   );

@@ -28,6 +28,7 @@
     "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.0",
     "crypto-js": "^4.1.1",
+    "html-react-parser": "^1.4.14",
     "https-browserify": "^1.0.0",
     "js-sha256": "^0.9.0",
     "lodash": "^4.17.21",
@@ -54,6 +55,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "cross-env NODE_ENV=production react-app-rewired build",
+    "build-test": "cross-env NODE_ENV=production REACT_APP_STACKS_MOCKNET=false react-app-rewired build",
     "test": "cross-env NODE_ENV=development react-app-rewired test",
     "dev": "cross-env NODE_ENV=production react-app-rewired start",
     "eject": "react-app-rewired eject"
@@ -66,9 +68,11 @@
   },
   "browserslist": {
     "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+      "chrome >= 67",
+      "edge >= 79",
+      "firefox >= 68",
+      "opera >= 54",
+      "safari >= 14"
     ],
     "development": [
       "last 1 chrome version",

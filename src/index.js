@@ -12,7 +12,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import "./styles/tailwind.css";
 
-// import "./styles/scss/global.scss";
+import "./styles/scss/global.scss";
 const options = {
   // you can also just use 'bottom center'
   position: positions.BOTTOM_RIGHT,

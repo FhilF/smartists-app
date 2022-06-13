@@ -11,24 +11,6 @@ import {
 
 import { apiServer } from "config";
 
-export const getSmartistsUserAsync = createAsyncThunk(
-  "smartistsMember/getSmartistsUserAsync",
-  (payload, { dispatch }) => {
-    return axios
-      .get(`${apiServer}/smartistsusers/${payload.walletAddress}`)
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        if (err.response.status === 404) {
-          return {};
-        } else {
-          throw JSON.stringify(err.response);
-        }
-      });
-  }
-);
-
 export const getFeaturedWorkByIdAsync = createAsyncThunk(
   "smartistsMember/getFeaturedWorkByIdAsync",
   (payload, { dispatch }) => {

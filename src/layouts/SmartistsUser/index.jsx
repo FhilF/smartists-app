@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { userSession } from "utils/stacks-util/auth";
 import { isMainnet } from "config";
+import Footer from "layouts/Footer";
 
 function Index(props) {
   const location = useLocation();
@@ -14,8 +15,11 @@ function Index(props) {
     useSelector(selectUserSession).smartistsUserSession.data;
   return (
     <div>
-      <Header smartistsUserSession={smartistsUserSession} isMainnet={isMainnet}/>
-      <div className="h-full flex flex-col">
+      <Header
+        smartistsUserSession={smartistsUserSession}
+        isMainnet={isMainnet}
+      />
+      <div className="h-full flex flex-col mb-36" style={{ minHeight: "110vh " }}>
         <div className="h-full flex-grow" style={{ marginTop: "60px" }}>
           <SmartistsUserRoute
             smartistsUserSession={smartistsUserSession}
@@ -24,6 +28,7 @@ function Index(props) {
           />
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

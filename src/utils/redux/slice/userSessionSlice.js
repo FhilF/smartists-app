@@ -14,22 +14,24 @@ import { apiServer } from "config";
 export const getSmartistsUserAsync = createAsyncThunk(
   "smartistsUserSession/getSmartistsUserAsync",
   (payload, { dispatch }) => {
-    return axios
-      .get(
-        `${apiServer}/smartistsusers/${payload.walletAddress}${
-          payload.isMainnet ? "?isMainnet=true" : ""
-        }`
-      )
-      .then((res) => {
-        return res.data;
-      })
-      .catch((err) => {
-        if (err.response.status === 404) {
-          return {};
-        } else {
-          throw JSON.stringify(err.response);
-        }
-      });
+    if (payload.walletAddress && payload.walletAddressTestnet) {
+      return axios
+        .get(
+          `${apiServer}/smartistsusers-mainnet-testnet?walletAddress=${payload.walletAddress}&walletAddressTestnet=${payload.walletAddressTestnet}}`
+        )
+        .then((res) => {
+          return res.data;
+        })
+        .catch((err) => {
+          if (err.response.status === 404) {
+            return {};
+          } else {
+            throw JSON.stringify(err.response);
+          }
+        });
+    } else {
+      throw Error("MissingParameter") ;
+    }
   }
 );
 
@@ -55,9 +57,10 @@ export const getSessionedMemberNftHoldingsAsync = createAsyncThunk(
     return nonFungibleTokensApi
       .getNftHoldings({
         principal: payload.walletAddress,
-        asset_identifiers: payload.assetIdentifiers
+        asset_identifiers: payload.assetIdentifiers,
       })
       .then((res) => {
+        console.log(res);
         return res.results;
       })
       .catch((err) => {

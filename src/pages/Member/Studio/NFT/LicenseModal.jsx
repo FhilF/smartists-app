@@ -1,44 +1,46 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { IoCloseSharp } from "react-icons/io5";
 import {
   smartistsContractAddress,
   StacksNetwork,
   StacksApiUriWs,
+  smartContractsApi,
 } from "config";
 import {
   noneCV,
   someCV,
   uintCV,
   PostConditionMode,
+  cvToHex,
+  deserializeCV,
+  cvToString,
 } from "@stacks/transactions";
+import { ReadOnlyFunctionArgsFromJSON } from "@stacks/blockchain-api-client";
 import { openContractCall } from "@stacks/connect";
 import { useAlert } from "react-alert";
 
 import { connectWebSocketClient } from "@stacks/blockchain-api-client";
 
 import { appDetails } from "utils/stacks-util/auth";
+import { Oval } from "react-loader-spinner";
 function ListModal(props) {
   const {
-    isListingOpen,
-    setIsListingOpen,
     metadata,
     assetContractName,
-    setWaitTransaction,
-    waitTransaction,
-    transactionId,
-    setTransactionId,
-    isListing,
-    formLoading,
-    setFormLoading,
-    price,
-    setPrice,
-    contractList,
-    isProcessingTransaction,
+    isLicensingOpen,
+    setIsLicensingOpen,
+    isBuyingLicense,
+    walletAddress,
+    licenseDetails,
+    contractBuyLicense,
   } = props;
+  const [isLoading, setIsLoading] = useState(true);
+  const [licensingDetails, setLicensingDetails] = useState(null);
+  useEffect(() => {}, []);
 
   return (
-    <Transition.Root show={isListingOpen} as={Fragment}>
+    <Transition.Root show={isLicensingOpen} as={Fragment}>
       <Dialog
         as="div"
         className="fixed z-10 inset-0 overflow-y-auto"
@@ -77,16 +79,13 @@ function ListModal(props) {
               <div>
                 <div className="flex">
                   <p className=" font-medium text-gray-600 text-lg flex-1">
-                    {isListing ? "List for sale" : "Update price"}
+                    {isBuyingLicense ? "Buy license" : "Renew license"}
                   </p>
                   <div className="flex items-center ">
                     <span
                       className="text-lg cursor-pointer"
                       onClick={() => {
-                        if (isProcessingTransaction) {
-                          return true;
-                        }
-                        setIsListingOpen(false);
+                        setIsLicensingOpen(false);
                       }}
                     >
                       <IoCloseSharp />
@@ -123,77 +122,83 @@ function ListModal(props) {
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-gray-600 text-sm">
-                      Enter the amount of STX you want the buyer to pay for your
-                      NFT
-                    </p>
-                  </div>
-                  <div className="w-full">
-                    <input
-                      style={{ appearance: "textfield" }}
-                      placeholder="0.000000 STX"
-                      id="name"
-                      className="appearance-none text-base leading-normal text-gray-500 w-full px-3 py-2 bg-white shadow border rounded-md border-gray-300 outline-red-900"
-                      value={price}
-                      onChange={(e) => {
-                        setPrice(e.target.value);
-                      }}
-                      type="number"
-                      autoComplete="off"
-                      disabled={formLoading}
-                    />
-                  </div>
+                  <div className="w-full"></div>
                   <div className="w-full">
                     <hr className="w-full mb-0" />
                   </div>
                   <div className="w-full">
-                    <p className="text-gray-800 text-sm">Listing breakdown</p>
-                    <div className="mt-2 flex">
-                      <p className="text-xs text-gray-800 flex-1">Price</p>
-                      <p className="text-xs text-gray-800">
-                        {price && `${price} STX`}
-                      </p>
+                    <p className="text-gray-800 text-sm">Licensing breakdown</p>
+                    <div className="mt-2 w-full">
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="col-span-3">
+                          <p className="text-xs text-gray-800">Details</p>
+                        </div>
+                        <div className="col-span-1">
+                          <p className="text-xs text-gray-800">Price</p>
+                        </div>
+                        <div className="col-span-3 mt-2">
+                          <p className="text-sm text-gray-800 font-semibold">
+                            {`License level ${metadata.level} - (${
+                              licenseDetails &&
+                              Object.keys(licenseDetails.rightsGranted)
+                                .filter(function (key) {
+                                  return licenseDetails.rightsGranted[key];
+                                })
+                                .join(", ")
+                            })`}
+                          </p>
+                        </div>
+                        <div className="col-span-1 mt-2">
+                          <p className="text-sm text-gray-800 font-semibold">
+                            {licenseDetails &&
+                              `${licenseDetails.price / 1000000} STX`}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="w-full">
+                  <div className="w-full pt-6">
                     <hr className="w-full mb-0" />
                   </div>
                   <div className="w-full">
-                    <div className="mt-2 flex">
-                      <p className="text-sm text-gray-800 flex-1">
-                        You will receive
-                      </p>
-                      <p className="text-sm text-gray-800 font-medium">
-                        {price && `${price} STX`}
-                      </p>
+                    <div className="mt-2 w-full">
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="col-span-3">
+                          <p className="text-sm text-gray-800 font-semibold">
+                            You will pay
+                          </p>
+                        </div>
+                        <div className="col-span-1">
+                          <p className="text-sm text-gray-800 font-semibold">
+                            {licenseDetails &&
+                              `${licenseDetails.price / 1000000} STX`}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div className="mt-8 flex justify-end">
                   <button
-                    className="px-8 py-2 text-gray-600 shadow rounded-md w-28 font-medium text-sm "
-                    disabled={isProcessingTransaction}
+                    className="px-8 py-2 text-gray-600 shadow rounded-md w-28 font-medium text-sm"
                     onClick={() => {
-                      if (isProcessingTransaction) {
-                        return true;
-                      }
-                      setIsListingOpen(false);
+                      setIsLicensingOpen(false);
                     }}
                   >
                     Cancel
                   </button>
                   <button
-                    className="px-8 py-2 text-white shadow rounded-md bg-red-900 w-28 font-medium text-sm disabled:bg-gray-200"
-                    disabled={isProcessingTransaction}
+                    className="px-8 py-2 text-white shadow rounded-md bg-red-900 w-28 font-medium text-sm"
                     onClick={() => {
-                      if (isProcessingTransaction) {
+                      if (!licenseDetails) {
                         return true;
                       }
-                      contractList();
+                      
+                      contractBuyLicense();
+                      //   contractList();
                     }}
                   >
-                    {isListing ? "List" : "Update"}
+                    {isBuyingLicense ? "Buy" : "Renew"}
                   </button>
                 </div>
               </div>

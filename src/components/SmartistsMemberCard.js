@@ -60,9 +60,9 @@ export default function SmartistsMemberCard(props) {
             <p className="w-72 text-xs leading-normal text-gray-400">
               {`${smartistsMember[
                 isMainnet ? "walletAddress" : "walletAddressTestnet"
-              ].substr(0, 8)}...${smartistsMember[
+              ]?.substr(0, 8)}...${smartistsMember[
                 isMainnet ? "walletAddress" : "walletAddressTestnet"
-              ].substr(-8)}`}
+              ]?.substr(-8)}`}
             </p>
           </div>
         </div>

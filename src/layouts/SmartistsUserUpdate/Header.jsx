@@ -28,17 +28,17 @@ function Header(props) {
             </a>
           </div>
           <ul className="nav-menu-list text-gray-600 hover:text-gray-900">
-            {/* <li className="nav-menu hover:text-gray-900">
+          <li className="nav-menu hover:text-gray-900">
               <a
-                href="/documentation"
+                href="/faqs"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("/documentation");
+                  navigate("/faqs");
                 }}
               >
-                Documentation
+                FAQs
               </a>
-            </li> */}
+            </li>
             <li className="nav-menu hover:text-gray-900">
               <a
                 href="/"

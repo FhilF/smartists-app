@@ -352,7 +352,6 @@ function SmartistsUserEdit(props) {
             console.log(err);
           });
       } else {
-        console.log("mewo");
         imageCompression(file, uploadImageOptions)
           .then((res) => {
             return addFileToStorage("smartists/displayPicture", res, {

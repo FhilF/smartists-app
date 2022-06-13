@@ -128,6 +128,45 @@ function Mint() {
 
     const formData = new FormData();
     let metadata = { name, description };
+
+    // try {
+    //   const transactionOptions = {
+    //     contractAddress: smartistsContractAddress,
+    //     contractName: "genuine-v1",
+    //     functionName: "create-genuine",
+    //     functionArgs: [
+    //       uintCV(level),
+    //       stringAsciiCV(
+    //         "ipfs://QmUWHEsNg8Kf48yQMqesM7yddaEJE1vKeiUeQex3PR8TQm"
+    //       ),
+    //     ],
+    //     network,
+    //     appDetails,
+    //     postConditionMode: PostConditionMode.Deny,
+    //     postConditions: [],
+    //     onFinish: (data) => {
+    //       alert.success(
+    //         "Successfully placed your transaction. Please for a while."
+    //       );
+    //       // navigate(`/${userData.profile.stxAddress.mainnet}/studio/nft`);
+    //       setTransactionId(data.txId);
+    //       setSavedData(null);
+    //       setWaitTransaction(true);
+    //       console.log("Stacks Transaction:", data.stacksTransaction);
+    //       console.log("Transaction ID:", data.txId);
+    //       console.log("Raw transaction:", data.txRaw);
+    //     },
+    //     onCancel: () => {
+    //       setSavedData(null);
+    //       setFormLoading(false);
+    //       console.log("Cancelled");
+    //     },
+    //   };
+    //   await openContractCall(transactionOptions);
+    // } catch (error) {
+    //   console.log(error);
+    // }
+
     try {
       let compressedMedia;
 
@@ -155,10 +194,10 @@ function Mint() {
           ...metadata,
           file_mime_type: compressedMedia.type,
           file_hash: rawMediaHash,
-          file_name_author_copy: fileUpload[0].fileName,
-          file_name_owner_copy: fileUpload[1].fileName,
-          image_hash: compressedMediaHash,
-          image: null,
+          file_name_personal_copy: fileUpload[0].fileName,
+          file_name: fileUpload[1].fileName,
+          thumbnail_hash: compressedMediaHash,
+          thumbnail: null,
           author_address:
             userData.profile.stxAddress[isMainnet ? "mainnet" : "testnet"],
         };
@@ -244,11 +283,6 @@ function Mint() {
       setFormLoading(false);
       console.log(error);
     }
-    // try {
-    //   await axios.post(`${apiServer}/nft`, formData, config);
-    // } catch (error) {
-    //   console.log(error.message);
-    // }
   };
 
   useEffect(() => {

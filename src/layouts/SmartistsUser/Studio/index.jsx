@@ -11,7 +11,8 @@ function Studio(props) {
     setSignedInSmartistsUser,
     isSessionedUser,
     setSmartistsUserData,
-    isMainnet
+    isMainnet,
+    smartistsUserSession
   } = props;
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ function Studio(props) {
             isSessionedUser={isSessionedUser}
             smartistsUserData={smartistsUserData}
             setSmartistsUserData={setSmartistsUserData}
+            smartistsUserSession={smartistsUserSession}
           />
         </div>
       </div>

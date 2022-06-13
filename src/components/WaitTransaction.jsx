@@ -11,6 +11,10 @@ function WaitTransaction(props) {
     setWaitTransaction,
     setTransactionId,
   } = props;
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [])
+  
 
   return (
     <div className="flex justify-center mt-20">

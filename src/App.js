@@ -66,23 +66,32 @@ const Content = (props) => {
       if (userSession) {
         if (userSession.isUserSignedIn()) {
           const userData = userSession.loadUserData();
-          const walletAddress =
-            userData.profile.stxAddress[isMainnet ? "mainnet" : "testnet"];
+          const walletAddressMainnet = userData.profile.stxAddress.mainnet;
+          const walletAddressTestnet = userData.profile.stxAddress.testnet;
           const userSessionStorage = sessionStorage.getItem("SmartistsUser");
           if (!userSessionStorage) {
             dispatch(
-              getSmartistsUserAsync({ walletAddress: walletAddress, isMainnet })
+              getSmartistsUserAsync({
+                walletAddress: walletAddressMainnet,
+                walletAddressTestnet,
+              })
             )
               .unwrap()
               .then((res) => {
                 if (res.hasOwnProperty("SmartistsUser")) {
-                  if (res.SmartistsUser.hasOwnProperty("walletAddress")) {
+                  if (
+                    res.SmartistsUser.walletAddress &&
+                    res.SmartistsUser.walletAddressTestnet
+                  ) {
                     dispatch(defineSmartistsUserSession(res.SmartistsUser));
                     sessionStorage.setItem(
                       "SmartistsUser",
                       JSON.stringify(res)
                     );
                     setUserType("SmartistsUser-Type");
+                    setIsLoading(false);
+                  } else {
+                    setUserType("SmartistsUserUpdate-Type");
                     setIsLoading(false);
                   }
                 } else {
@@ -117,21 +126,29 @@ const Content = (props) => {
     if (userSession) {
       if (userSession.isUserSignedIn()) {
         const userData = userSession.loadUserData();
-        const walletAddress =
-          userData.profile.stxAddress[isMainnet ? "mainnet" : "testnet"];
-          console.log(walletAddress)
+        const walletAddressMainnet = userData.profile.stxAddress.mainnet;
+        const walletAddressTestnet = userData.profile.stxAddress.testnet;
         const userSessionStorage = sessionStorage.getItem("SmartistsUser");
         if (!userSessionStorage) {
           dispatch(
-            getSmartistsUserAsync({ walletAddress: walletAddress, isMainnet })
+            getSmartistsUserAsync({
+              walletAddress: walletAddressMainnet,
+              walletAddressTestnet,
+            })
           )
             .unwrap()
             .then((res) => {
               if (res.hasOwnProperty("SmartistsUser")) {
-                if (res.SmartistsUser.hasOwnProperty("walletAddress")) {
+                if (
+                  res.SmartistsUser.walletAddress &&
+                  res.SmartistsUser.walletAddressTestnet
+                ) {
                   dispatch(defineSmartistsUserSession(res.SmartistsUser));
                   sessionStorage.setItem("SmartistsUser", JSON.stringify(res));
                   setUserType("SmartistsUser-Type");
+                  setIsLoading(false);
+                } else {
+                  setUserType("SmartistsUserUpdate-Type");
                   setIsLoading(false);
                 }
               } else {

@@ -58,13 +58,13 @@ function Header(props) {
               </li>
               <li className="nav-menu hover:text-gray-900">
                 <a
-                  href="/marketplace"
+                  href="/gallery"
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate("/marketplace");
+                    navigate("/gallery");
                   }}
                 >
-                  Marketplace
+                  Gallery
                 </a>
               </li>
               <li className="nav-menu hover:text-gray-900">

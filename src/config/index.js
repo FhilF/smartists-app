@@ -30,10 +30,12 @@ export const StacksNetwork = isMainnet
 
 export const smartistsContractAddress = isMainnet
   ? ""
-  : "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
+  : isMocknet
+  ? "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
+  : "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W";
 
 export const assetIdentifiers = [
-  "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.genuine-v1::Genuine",
+  "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W.genuine-v1::Genuine",
 ];
 
 export const StacksApiUrl = isMainnet

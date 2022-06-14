@@ -14,7 +14,7 @@ import Card from "components/NftCard";
 import { useNavigate } from "react-router-dom";
 import WaitTransaction from "components/WaitTransaction";
 
-function MarketPlace(props) {
+function Gallery(props) {
   console.log(props);
   const navigate = useNavigate();
   const userData = userSession.loadUserData();
@@ -68,7 +68,7 @@ function MarketPlace(props) {
     <div>
       <div className="mt-20">
         <div>
-          <h1 className=" text-4xl">Marketplace</h1>
+          <h1 className=" text-4xl">Gallery</h1>
         </div>
         <div className=" grid grid-cols-4 gap-4 mt-10">
           {orderBy(
@@ -98,4 +98,4 @@ function MarketPlace(props) {
   );
 }
 
-export default MarketPlace;
+export default Gallery;

@@ -30,10 +30,12 @@ export const StacksNetwork = isMainnet
 
 export const smartistsContractAddress = isMainnet
   ? ""
-  : "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
+  : isMocknet
+  ? "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
+  : "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W";
 
 export const assetIdentifiers = [
-  "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.genuine-v1::Genuine",
+  "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W.genuine-v1::Genuine",
 ];
 
 export const StacksApiUrl = isMainnet
@@ -48,9 +50,9 @@ export const StacksApiUriWs = isMainnet
   ? "ws://localhost:3999"
   : "ws://stacks-node-api.testnet.stacks.co";
 
-export const StacksExplorer = isMainnet
-  ? "https://explorer.stacks.co"
-  : "http://localhost:8000";
+export const StacksExplorer = isMocknet
+  ? "http://localhost:8000"
+  : "https://explorer.stacks.co";
 
 const config = new Configuration({ basePath: StacksApiUrl });
 export const faucetApi = new FaucetsApi(config);

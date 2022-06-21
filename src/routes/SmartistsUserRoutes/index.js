@@ -6,7 +6,7 @@ import FeaturedWorkView from "pages/Member/Studio/FeaturedWork/View";
 import FeaturedProjectView from "pages/Member/Studio/FeaturedProject/View";
 import ViewNFT from "pages/Member/Studio/NFT/View";
 import globalRoutes from "routes/GlobalRoutes";
-import MarketPlace from "pages/Member/Marketplace";
+import Gallery from "pages/Member/Gallery";
 
 function SmartistsUser(props) {
   const { smartistsUserSession, location, isMainnet } = props;
@@ -15,7 +15,7 @@ function SmartistsUser(props) {
     <>
       <Routes>
         <Route path="/members" element={<MembersList />} />
-        <Route path="/marketplace" element={<MarketPlace />} />
+        <Route path="/gallery" element={<Gallery />} />
         {globalRoutes.map((component) => component)}
 
         <Route

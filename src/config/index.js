@@ -50,9 +50,9 @@ export const StacksApiUriWs = isMainnet
   ? "ws://localhost:3999"
   : "ws://stacks-node-api.testnet.stacks.co";
 
-export const StacksExplorer = isMainnet
-  ? "https://explorer.stacks.co"
-  : "http://localhost:8000";
+export const StacksExplorer = isMocknet
+  ? "http://localhost:8000"
+  : "https://explorer.stacks.co";
 
 const config = new Configuration({ basePath: StacksApiUrl });
 export const faucetApi = new FaucetsApi(config);

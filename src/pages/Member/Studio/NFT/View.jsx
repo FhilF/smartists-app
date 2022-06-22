@@ -952,8 +952,6 @@ const Content = (props) => {
   };
 
   const contractRelease = async () => {
-    console.log(pendingSaleDetails);
-    console.log(metadata);
     setIsProcessingTransaction(true);
     const nonFungibleAssetInfo = createAssetInfo(
       smartistsContractAddress,

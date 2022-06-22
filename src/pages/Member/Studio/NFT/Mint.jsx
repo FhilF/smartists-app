@@ -190,8 +190,6 @@ function Mint() {
           }),
         ]);
 
-        console.log(fileUpload)
-
         metadata = {
           ...metadata,
           file_mime_type: compressedMedia.type,

@@ -9,6 +9,7 @@ import {
   getSmartistsUserAsync,
 } from "utils/redux/slice/userSessionSlice";
 import { isMainnet } from "config";
+import { getPublicKeyFromPrivate,publicKeyToAddress } from "@stacks/encryption";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -126,14 +127,12 @@ const Content = (props) => {
     if (userSession) {
       if (userSession.isUserSignedIn()) {
         const userData = userSession.loadUserData();
-        const walletAddressMainnet = userData.profile.stxAddress.mainnet;
-        const walletAddressTestnet = userData.profile.stxAddress.testnet;
-        const userSessionStorage = sessionStorage.getItem("SmartistsUser");
-        if (!userSessionStorage) {
-          dispatch(
-            getSmartistsUserAsync({
-              walletAddress: walletAddressMainnet,
-              walletAddressTestnet,
+        console.log(userData)
+        const publicKey = getPublicKeyFromPrivate(userData.appPrivateKey)
+        console.log(publicKey)
+        console.log(publicKeyToAddress(publicKey))
+erData();
+ walletAddressTestnet,
             })
           )
             .unwrap()

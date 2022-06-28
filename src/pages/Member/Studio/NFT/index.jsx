@@ -337,12 +337,12 @@ const Owned = (props) => {
   useEffect(() => {
     if (isSessionedUser) {
       if (sessionedMemberState.nftList.status === "idle") {
-        dispatch(
-          getSessionedMemberNftHoldingsAsync({
-            walletAddress: userWalletAddress,
-            assetIdentifiers,
-          })
-        );
+        // dispatch(
+        //   getSessionedMemberNftHoldingsAsync({
+        //     walletAddress: userWalletAddress,
+        //     assetIdentifiers,
+        //   })
+        // );
       }
       if (sessionedMemberState.nftList.status === "fulfilled") {
         setGenuineList(sessionedMemberState.nftList.data);

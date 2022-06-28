@@ -33,6 +33,7 @@ import {
 } from "utils/stacks-util/storage";
 import classNames from "classnames";
 import structuredClone from "@ungap/structured-clone";
+import { isMainnet } from "config";
 
 function SmartistsUserEdit(props) {
   const {
@@ -314,7 +315,7 @@ function SmartistsUserEdit(props) {
             return imageCompression(file, uploadImageOptions);
           })
           .then((res) => {
-            return addFileToStorage({dir: "smartists/displayPicture"}, res, {
+            return addFileToStorage({ dir: "smartists/displayPicture" }, res, {
               encrypt: false,
             });
           })
@@ -343,7 +344,13 @@ function SmartistsUserEdit(props) {
               "SmartistsUser",
               JSON.stringify(userSessionStorage)
             );
-            navigate(`/${fetchedSmartistsUser.walletAddress}/about-me`);
+            navigate(
+              `/${
+                fetchedSmartistsUser[
+                  isMainnet ? "walletAddress" : "walletAddressTestnet"
+                ]
+              }/about-me`
+            );
 
             setFormLoading(false);
           })
@@ -354,7 +361,7 @@ function SmartistsUserEdit(props) {
       } else {
         imageCompression(file, uploadImageOptions)
           .then((res) => {
-            return addFileToStorage("smartists/displayPicture", res, {
+            return addFileToStorage({ dir: "smartists/displayPicture" }, res, {
               encrypt: false,
             });
           })
@@ -383,7 +390,13 @@ function SmartistsUserEdit(props) {
               "SmartistsUser",
               JSON.stringify(userSessionStorage)
             );
-            navigate(`/${fetchedSmartistsUser.walletAddress}/about-me`);
+            navigate(
+              `/${
+                fetchedSmartistsUser[
+                  isMainnet ? "walletAddress" : "walletAddressTestnet"
+                ]
+              }/about-me`
+            );
 
             setFormLoading(false);
           })
@@ -417,7 +430,13 @@ function SmartistsUserEdit(props) {
             "SmartistsUser",
             JSON.stringify(userSessionStorage)
           );
-          navigate(`/${fetchedSmartistsUser.walletAddress}/about-me`);
+          navigate(
+            `/${
+              fetchedSmartistsUser[
+                isMainnet ? "walletAddress" : "walletAddressTestnet"
+              ]
+            }/about-me`
+          );
 
           setFormLoading(false);
         })
@@ -425,7 +444,13 @@ function SmartistsUserEdit(props) {
           alert.error(
             "There was a problem submitting the form please try again later!"
           );
-          navigate(`/${smartistsMemberCopy.walletAddress}/about-me`);
+          navigate(
+            `/${
+              smartistsMemberCopy[
+                isMainnet ? "walletAddress" : "walletAddressTestnet"
+              ]
+            }/about-me`
+          );
           setFormLoading(false);
           console.log(err);
         });
@@ -754,7 +779,13 @@ function SmartistsUserEdit(props) {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(`/${smartistsUserSession.walletAddress}/about-me`);
+                      navigate(
+                        `/${
+                          smartistsUserSession[
+                            isMainnet ? "walletAddress" : "walletAddressTestnet"
+                          ]
+                        }/about-me`
+                      );
                     }}
                     className="inline-flex items-center justify-center w-96 px-1 py-2 shadow rounded-full"
                   >

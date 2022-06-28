@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   defineSmartistsUserSession,
   getSmartistsUserListAsync,
-  getSmartistsUserAsync,
+  getSmartistsUserMainnetTestnetAsync,
 } from "utils/redux/slice/userSessionSlice";
 
 function App() {
@@ -70,7 +70,7 @@ const Content = (props) => {
           const userSessionStorage = sessionStorage.getItem("SmartistsUser");
           if (!userSessionStorage) {
             dispatch(
-              getSmartistsUserAsync({
+              getSmartistsUserMainnetTestnetAsync({
                 walletAddress: walletAddressMainnet,
                 walletAddressTestnet,
               })
@@ -130,7 +130,7 @@ const Content = (props) => {
         const userSessionStorage = sessionStorage.getItem("SmartistsUser");
         if (!userSessionStorage) {
           dispatch(
-            getSmartistsUserAsync({
+            getSmartistsUserMainnetTestnetAsync({
               walletAddress: walletAddressMainnet,
               walletAddressTestnet,
             })

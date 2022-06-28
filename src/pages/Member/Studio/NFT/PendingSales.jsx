@@ -14,6 +14,7 @@ import Card from "components/NftCard";
 import { useNavigate } from "react-router-dom";
 import WaitTransaction from "components/WaitTransaction";
 import classNames from "classnames";
+import { contractName } from "config";
 
 function PendingSale(props) {
   const {
@@ -28,7 +29,6 @@ function PendingSale(props) {
   const [nftList, setNftList] = useState([]);
   useEffect(() => {
     const fetchMarketItems = async () => {
-      const contractName = "genuine-v1";
 
       try {
         const lastTokenId = await smartContractsApi.callReadOnlyFunction({
@@ -45,7 +45,7 @@ function PendingSale(props) {
         );
         const marketItems = await fetchMapEntry(
           smartistsContractAddress,
-          "genuine-v1",
+          contractName,
           "pending-sale",
           parseInt(cvToString(lastTokenIdCv.value).substr(1))
         );

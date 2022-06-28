@@ -2,7 +2,7 @@ import React from "react";
 import classNames from "classnames";
 
 function Dialog(props) {
-  const { children, handleClose, className, style, disabled } = props;
+  const { children, handleClose, className, style, disabled, childRef } = props;
   return (
     <div className="dialog-root">
       <div className="dialog-backdrop"></div>
@@ -17,6 +17,7 @@ function Dialog(props) {
             }
           }
         }}
+        ref={childRef}
       >
         <div
           className={classNames("dialog-paper", className)}

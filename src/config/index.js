@@ -35,8 +35,14 @@ export const smartistsContractAddress = isMainnet
   : "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W";
 
 export const assetIdentifiers = [
-  "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W.genuine-v1::Genuine",
+  "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W.genuine-v2::Genuine",
 ];
+
+export const contractName = isMainnet
+? ""
+: isMocknet
+? "genuine"
+: "genuine-v2";
 
 export const StacksApiUrl = isMainnet
   ? "https://stacks-node-api.mainnet.stacks.co"

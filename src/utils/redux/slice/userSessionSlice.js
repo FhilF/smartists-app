@@ -11,8 +11,10 @@ import axios from "axios";
 
 import { apiServer } from "config";
 
-export const getSmartistsUserAsync = createAsyncThunk(
-  "smartistsUserSession/getSmartistsUserAsync",
+
+
+export const getSmartistsUserMainnetTestnetAsync = createAsyncThunk(
+  "smartistsUserSession/getSmartistsUserMainnetTestnetAsync",
   (payload, { dispatch }) => {
     if (payload.walletAddress && payload.walletAddressTestnet) {
       return axios
@@ -34,6 +36,7 @@ export const getSmartistsUserAsync = createAsyncThunk(
     }
   }
 );
+
 
 export const registerSmartistsUserAsync = createAsyncThunk(
   "smartistsUserSession/registerSmartistsUserAsync",
@@ -154,21 +157,23 @@ const smartistsUserSessionSlice = createSlice({
     },
   },
   extraReducers: {
-    [getSmartistsUserAsync.pending]: (state, action) => {
+    
+
+    [getSmartistsUserMainnetTestnetAsync.pending]: (state, action) => {
       state.smartistsUser = {
         status: "pending",
         data: {},
         error: {},
       };
     },
-    [getSmartistsUserAsync.fulfilled]: (state, action) => {
+    [getSmartistsUserMainnetTestnetAsync.fulfilled]: (state, action) => {
       state.smartistsUser = {
         status: "fulfilled",
         data: action.payload,
         error: {},
       };
     },
-    [getSmartistsUserAsync.rejected]: (state, action) => {
+    [getSmartistsUserMainnetTestnetAsync.rejected]: (state, action) => {
       state.smartistsUser = {
         status: "rejected",
         data: {},

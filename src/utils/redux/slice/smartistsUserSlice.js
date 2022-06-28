@@ -11,6 +11,28 @@ import {
 
 import { apiServer } from "config";
 
+export const getSmartistsUserAsync = createAsyncThunk(
+  "smartistsUserSession/getSmartistsUserAsync",
+  (payload, { dispatch }) => {
+    return axios
+      .get(
+        `${apiServer}/smartistsusers/${payload.walletAddress}${
+          payload.isMainnet ? "?isMainnet=true" : ""
+        }`
+      )
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        if (err.response.status === 404) {
+          return {};
+        } else {
+          throw JSON.stringify(err.response);
+        }
+      });
+  }
+);
+
 export const getFeaturedWorkByIdAsync = createAsyncThunk(
   "smartistsMember/getFeaturedWorkByIdAsync",
   (payload, { dispatch }) => {
@@ -119,6 +141,27 @@ const smartistsUserSlice = createSlice({
     },
   },
   extraReducers: {
+    [getSmartistsUserAsync.pending]: (state, action) => {
+      state.smartistsUser = {
+        status: "pending",
+        data: {},
+        error: {},
+      };
+    },
+    [getSmartistsUserAsync.fulfilled]: (state, action) => {
+      state.smartistsUser = {
+        status: "fulfilled",
+        data: action.payload,
+        error: {},
+      };
+    },
+    [getSmartistsUserAsync.rejected]: (state, action) => {
+      state.smartistsUser = {
+        status: "rejected",
+        data: {},
+        error: action.error,
+      };
+    },
     [getFeaturedWorkByIdAsync.pending]: (state, action) => {
       state.featuredWork = {
         status: "pending",

@@ -29,6 +29,8 @@ import { faucetApi } from "config";
 import WaitTransactionModal from "components/WaitTransactionModal";
 import { useAlert } from "react-alert";
 
+import { contractName } from "config";
+
 function NFT(props) {
   const {
     isSessionedUser,
@@ -239,7 +241,7 @@ const Owned = (props) => {
 
   const getMempoolTx = async () => {
     return await transactionApi.getMempoolTransactionList({
-      address: `${smartistsContractAddress}.${"genuine-v1"}`,
+      address: `${smartistsContractAddress}.${contractName}`,
     });
   };
 

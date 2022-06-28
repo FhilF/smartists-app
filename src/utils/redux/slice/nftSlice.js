@@ -2,9 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 // import { nanoid } from "nanoid";
 import axios from "axios";
 import { smartistsContractAddress } from "config";
-import { StacksApiUrl } from "config";
-
-import { apiServer } from "config";
+import { StacksApiUrl,contractName, apiServer } from "config";
 
 
 export const getContractStoredAssetsAsync = createAsyncThunk(
@@ -13,7 +11,7 @@ export const getContractStoredAssetsAsync = createAsyncThunk(
     console.log("Test")
     return axios
       .get(
-        `${StacksApiUrl}/extended/v1/tokens/nft/holdings?principal=${smartistsContractAddress}.genuine-v1&asset_identifiers=${smartistsContractAddress}.genuine-v1::Genuine`
+        `${StacksApiUrl}/extended/v1/tokens/nft/holdings?principal=${smartistsContractAddress}.${contractName}&asset_identifiers=${smartistsContractAddress}.${contractName}::Genuine`
       )
       .then((res) => {
         console.log(res);

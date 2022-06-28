@@ -13,6 +13,7 @@ import { orderBy } from "lodash";
 import Card from "components/NftCard";
 import { useNavigate } from "react-router-dom";
 import WaitTransaction from "components/WaitTransaction";
+import { contractName } from "config";
 
 function Gallery(props) {
   console.log(props);
@@ -24,8 +25,6 @@ function Gallery(props) {
   const [listedNft, setListedNft] = useState([]);
   useEffect(() => {
     const fetchMarketItems = async () => {
-      const contractName = "genuine-v1";
-
       try {
         const lastTokenId = await smartContractsApi.callReadOnlyFunction({
           contractAddress: smartistsContractAddress,
@@ -41,7 +40,7 @@ function Gallery(props) {
         );
         const marketItems = await fetchMapEntry(
           smartistsContractAddress,
-          "genuine-v1",
+          contractName,
           "market-item",
           parseInt(cvToString(lastTokenIdCv.value).substr(1))
         );

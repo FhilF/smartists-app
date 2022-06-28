@@ -9,11 +9,7 @@ import {
 import MemberRoutes from "routes/SmartistsUserRoutes/MemberRoutes";
 import { useSelector, useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
-import {
-  defineSmartistsUserSession,
-  getSmartistsUserListAsync,
-  getSmartistsUserAsync,
-} from "utils/redux/slice/userSessionSlice";
+import { getSmartistsUserAsync } from "utils/redux/slice/smartistsUserSlice";
 import classNames from "classnames";
 
 import Button from "customComponents/Button";
@@ -49,7 +45,12 @@ function Index(props) {
   useEffect(() => {
     if (!isEmpty(urlAddress)) {
       if (!superUserRoutes.includes(urlAddress)) {
-        if (urlAddress !== smartistsUserSession[isMainnet ? "walletAddress" : "walletAddressTestnet"]) {
+        if (
+          urlAddress !==
+          smartistsUserSession[
+            isMainnet ? "walletAddress" : "walletAddressTestnet"
+          ]
+        ) {
           dispatch(getSmartistsUserAsync({ walletAddress: urlAddress }))
             .unwrap()
             .then((res) => {
@@ -155,7 +156,13 @@ const UserNotFound = (props) => {
         <Button
           className="mt-4"
           onClick={(e) => {
-            navigate(`/${smartistsUserSession[isMainnet ? "walletAddress" : "walletAddressTestnet"]}`);
+            navigate(
+              `/${
+                smartistsUserSession[
+                  isMainnet ? "walletAddress" : "walletAddressTestnet"
+                ]
+              }`
+            );
           }}
           variant="contained"
           color="secondary"

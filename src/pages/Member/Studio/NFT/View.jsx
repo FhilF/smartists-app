@@ -63,7 +63,7 @@ import {
   publicKeyToAddress,
   decryptContent,
 } from "@stacks/encryption";
-import { StacksApiUrl } from "config";
+import { StacksApiUrl, contractName } from "config";
 import { Oval } from "react-loader-spinner";
 import classNames from "classnames";
 import { apiServer } from "config";
@@ -73,6 +73,7 @@ import {
   getFileFromStorage,
 } from "utils/stacks-util/storage";
 import LicenseModal from "./LicenseModal";
+import Buy from "./Buy";
 
 const BigNum = require("bn.js");
 
@@ -851,7 +852,7 @@ const Content = (props) => {
       setIsProcessingTransaction(true);
       const transactionOptions = {
         contractAddress: smartistsContractAddress,
-        contractName: "genuine-v1",
+        contractName,
         functionName: "list-in-ustx",
         functionArgs: [
           uintCV(parseInt(metadata.id)),
@@ -1262,7 +1263,6 @@ const Content = (props) => {
         }
       };
       const personalCopy = await checkFile();
-      console.log(personalCopy);
 
       if (
         !personalCopy ||
@@ -1298,7 +1298,6 @@ const Content = (props) => {
           type: metadata.file_mime_type,
         });
         const url = window.URL.createObjectURL(fileBlob);
-        console.log(fileBlob);
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute(
@@ -1907,46 +1906,51 @@ const Content = (props) => {
                 )}
               {metadata.listingDetails !== "none" &&
                 walletAddress !== metadata.owner && (
-                  <li
-                    className={classNames(
-                      "p-2 flex items-center",
-                      isBuyingPendingTx
-                        ? "bg-gray-200"
-                        : "hover:bg-gray-100 cursor-pointer"
-                    )}
-                    onClick={() => {
-                      if (isBuyingPendingTx) {
-                        return true;
-                      }
-                      contractBuy();
-                    }}
-                  >
-                    <span>
-                      <img
-                        src={StxIcon}
-                        alt="Stacks Icon"
-                        height={24}
-                        width={24}
-                      />
-                    </span>
-                    <span className="ml-4 text-gray-600 font-medium flex-1">
-                      {isBuyingPendingTx ? "Buy Pending..." : "Buy"}
-                    </span>
-                    <span>
-                      {isBuyingPendingTx ? (
-                        <Oval
-                          ariaLabel="loading-indicator"
-                          height={24}
-                          width={24}
-                          strokeWidth={5}
-                          strokeWidthSecondary={1}
-                          color="blue"
-                          secondaryColor="gray"
-                          className="mr-8"
-                        />
-                      ) : null}
-                    </span>
-                  </li>
+                  <Buy
+                    isBuyingPendingTx={isBuyingPendingTx}
+                    contractBuy={contractBuy}
+                    alert={alert}
+                  />
+                  // <li
+                  //   className={classNames(
+                  //     "p-2 flex items-center",
+                  //     isBuyingPendingTx
+                  //       ? "bg-gray-200"
+                  //       : "hover:bg-gray-100 cursor-pointer"
+                  //   )}
+                  //   onClick={() => {
+                  //     if (isBuyingPendingTx) {
+                  //       return true;
+                  //     }
+                  //     contractBuy();
+                  //   }}
+                  // >
+                  //   <span>
+                  //     <img
+                  //       src={StxIcon}
+                  //       alt="Stacks Icon"
+                  //       height={24}
+                  //       width={24}
+                  //     />
+                  //   </span>
+                  //   <span className="ml-4 text-gray-600 font-medium flex-1">
+                  //     {isBuyingPendingTx ? "Buy Pending..." : "Buy"}
+                  //   </span>
+                  //   <span>
+                  //     {isBuyingPendingTx ? (
+                  //       <Oval
+                  //         ariaLabel="loading-indicator"
+                  //         height={24}
+                  //         width={24}
+                  //         strokeWidth={5}
+                  //         strokeWidthSecondary={1}
+                  //         color="blue"
+                  //         secondaryColor="gray"
+                  //         className="mr-8"
+                  //       />
+                  //     ) : null}
+                  //   </span>
+                  // </li>
                 )}
               {metadata.listingDetails === "none" &&
                 metadata.owner ===

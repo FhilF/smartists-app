@@ -16,32 +16,16 @@ import imageCompression from "browser-image-compression";
 import { addFileToStorage } from "utils/stacks-util/storage";
 import { sha256, sha224 } from "js-sha256";
 
-import {
-  publicKeyToAddress,
-  getPublicKeyFromPrivate,
-} from "@stacks/encryption";
-
-import {
-  uintCV,
-  intCV,
-  bufferCV,
-  stringAsciiCV,
-  noneCV,
-  someCV,
-  stringUtf8CV,
-  standardPrincipalCV,
-  trueCV,
-  PostConditionMode,
-  createSTXPostCondition,
-  createNonFungiblePostCondition,
-  NonFungibleConditionCode,
-} from "@stacks/transactions";
+import { uintCV, stringAsciiCV, PostConditionMode } from "@stacks/transactions";
 
 import { openSTXTransfer, openContractCall } from "@stacks/connect";
 import { useNavigate } from "react-router-dom";
 import { appDetails } from "utils/stacks-util/auth";
 
 import WaitTransactionComponent from "components/WaitTransaction";
+import { isMocknet } from "config";
+import LicensingAgreements from "components/LicensingAgreement";
+import { contractName } from "config";
 
 // const axios = require("axios");
 // const FormData = require("form-data");
@@ -71,6 +55,12 @@ function Mint() {
   const [fileType, setFileType] = useState("Image");
   const [waitTransaction, setWaitTransaction] = useState(false);
   const [transactionId, setTransactionId] = useState(null);
+  const [agreedToTerms, setAgreedToTerms] = useState({
+    ag1: false,
+    ag2: false,
+  });
+
+  const [showTerms, setShowTerms] = useState(false);
 
   const [savedData, setSavedData] = useState(null);
 
@@ -120,54 +110,64 @@ function Mint() {
       return null;
     }
 
-    if (!isEmptyStr(name) || !isEmptyStr(description) || !media) {
-      alert.error("Please fill up the form");
-      setFormLoading(false);
-      return null;
+    if (!isMocknet) {
+      if (!Object.keys(agreedToTerms).every((k) => agreedToTerms[k])) {
+        alert.error("Agree to Licensing Terms & Conditions");
+        return false;
+      }
     }
 
-    const formData = new FormData();
-    let metadata = { name, description };
-
-    // try {
-    //   const transactionOptions = {
-    //     contractAddress: smartistsContractAddress,
-    //     contractName: "genuine-v1",
-    //     functionName: "create-genuine",
-    //     functionArgs: [
-    //       uintCV(level),
-    //       stringAsciiCV(
-    //         "ipfs://QmUWHEsNg8Kf48yQMqesM7yddaEJE1vKeiUeQex3PR8TQm"
-    //       ),
-    //     ],
-    //     network,
-    //     appDetails,
-    //     postConditionMode: PostConditionMode.Deny,
-    //     postConditions: [],
-    //     onFinish: (data) => {
-    //       alert.success(
-    //         "Successfully placed your transaction. Please for a while."
-    //       );
-    //       // navigate(`/${userData.profile.stxAddress.mainnet}/studio/nft`);
-    //       setTransactionId(data.txId);
-    //       setSavedData(null);
-    //       setWaitTransaction(true);
-    //       console.log("Stacks Transaction:", data.stacksTransaction);
-    //       console.log("Transaction ID:", data.txId);
-    //       console.log("Raw transaction:", data.txRaw);
-    //     },
-    //     onCancel: () => {
-    //       setSavedData(null);
-    //       setFormLoading(false);
-    //       console.log("Cancelled");
-    //     },
-    //   };
-    //   await openContractCall(transactionOptions);
-    // } catch (error) {
-    //   console.log(error);
-    // }
-
     try {
+      if (isMocknet) {
+        if (userWalletAddress === "ST3RX10HM09TZF9NYHS6ZEG5XK4Y6H5HADRW4N56") {
+          setFormLoading(false);
+          const transactionOptions = {
+            contractAddress: smartistsContractAddress,
+            contractName,
+            functionName: "create-genuine",
+            functionArgs: [
+              uintCV(level),
+              stringAsciiCV(
+                `ipfs://QmQUEZ6naK7m5hDF8RP2N9HJEymq1NgrTthXCFyW8Bm8qp`
+              ),
+            ],
+            network,
+            appDetails,
+            postConditionMode: PostConditionMode.Deny,
+            postConditions: [],
+            onFinish: (data) => {
+              alert.success(
+                "Successfully placed your transaction. Please for a while."
+              );
+              // navigate(`/${userData.profile.stxAddress.mainnet}/studio/nft`);
+              setTransactionId(data.txId);
+              setSavedData(null);
+              setWaitTransaction(true);
+              console.log("Stacks Transaction:", data.stacksTransaction);
+              console.log("Transaction ID:", data.txId);
+              console.log("Raw transaction:", data.txRaw);
+            },
+            onCancel: () => {
+              setSavedData(null);
+              setFormLoading(false);
+              console.log("Cancelled");
+            },
+          };
+
+          setFormLoading(false);
+          await openContractCall(transactionOptions);
+          return true;
+        }
+      }
+
+      if (!isEmptyStr(name) || !isEmptyStr(description) || !media) {
+        alert.error("Please fill up the form");
+        setFormLoading(false);
+        return null;
+      }
+
+      const formData = new FormData();
+      let metadata = { name, description };
       let compressedMedia;
 
       if (!savedData) {
@@ -214,7 +214,7 @@ function Mint() {
 
         const transactionOptions = {
           contractAddress: smartistsContractAddress,
-          contractName: "genuine-v1",
+          contractName,
           functionName: "create-genuine",
           functionArgs: [
             uintCV(level),
@@ -243,11 +243,12 @@ function Mint() {
           },
         };
         await openContractCall(transactionOptions);
+        return true;
       } else {
-        console.log("sve data");
+        setFormLoading(false);
         const transactionOptions = {
           contractAddress: smartistsContractAddress,
-          contractName: "genuine-v1",
+          contractName,
           functionName: "create-genuine",
           functionArgs: [
             uintCV(savedData.level),
@@ -276,6 +277,7 @@ function Mint() {
           },
         };
         await openContractCall(transactionOptions);
+        return true;
       }
     } catch (error) {
       alert.error("There was an error uploading your file");
@@ -283,6 +285,9 @@ function Mint() {
       setFormLoading(false);
       console.log(error);
     }
+    console.log("Test");
+    setFormLoading(false);
+    return true;
   };
 
   useEffect(() => {
@@ -293,6 +298,15 @@ function Mint() {
     }
     return () => URL.revokeObjectURL(objectUrl);
   }, [media]);
+
+  useEffect(() => {
+    if (isMocknet) {
+      setAgreedToTerms({
+        ag1: true,
+        ag2: true,
+      });
+    }
+  }, []);
 
   return (
     <div className="flex-grow w-full flex flex-col p-4 pb-0 md:p-8 lg:p-0 lg:max-w-4xl xl:max-w-6xl 2xl:max-w-screen-xl mx-auto">
@@ -435,11 +449,26 @@ function Mint() {
                         disabled={formLoading}
                       />
                     </div>
+                    <div className="flex flex-col space-y-1 items-start justify-start w-full">
+                      <LicensingAgreements
+                        agreedToTerms={agreedToTerms}
+                        setAgreedToTerms={setAgreedToTerms}
+                        disabled={formLoading}
+                        alert={alert}
+                        showTerms={showTerms}
+                        setShowTerms={setShowTerms}
+                      />
+                    </div>
                     <div className="w-full flex justify-center flex-col mt-8 items-center">
                       <button
                         type="submit"
                         className="w-96 px-1 py-2 shadow rounded-full bg-red-900 disabled:bg-gray-500"
-                        disabled={formLoading}
+                        disabled={
+                          formLoading ||
+                          !Object.keys(agreedToTerms).every(
+                            (k) => agreedToTerms[k]
+                          )
+                        }
                         // onClick={(e) => {
                         //   e.preventDefault();
                         //   console.log("Test");

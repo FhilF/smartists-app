@@ -60,7 +60,7 @@ export const getSessionedMemberNftHoldingsAsync = createAsyncThunk(
     return nonFungibleTokensApi
       .getNftHoldings({
         principal: payload.walletAddress,
-        asset_identifiers: payload.assetIdentifiers,
+        assetIdentifiers: payload.assetIdentifiers,
       })
       .then((res) => {
         console.log(res);

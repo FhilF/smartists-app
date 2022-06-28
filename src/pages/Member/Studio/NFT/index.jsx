@@ -290,7 +290,7 @@ const Owned = (props) => {
           dispatch(
             getSessionedMemberNftHoldingsAsync({
               walletAddress: userWalletAddress,
-              assetIdentifiers: assetIdentifiers[0],
+              assetIdentifiers,
             })
           );
           setPendingMints(pendingTx);
@@ -340,7 +340,7 @@ const Owned = (props) => {
         dispatch(
           getSessionedMemberNftHoldingsAsync({
             walletAddress: userWalletAddress,
-            assetIdentifiers: assetIdentifiers[0],
+            assetIdentifiers,
           })
         );
       }
@@ -362,7 +362,7 @@ const Owned = (props) => {
         dispatch(
           getSmartistsMemberNftHoldingsAsync({
             walletAddress: userWalletAddress,
-            assetIdentifiers: assetIdentifiers[0],
+            assetIdentifiers,
           })
         );
       }
@@ -389,7 +389,7 @@ const Owned = (props) => {
         dispatch(
           getSmartistsMemberNftHoldingsAsync({
             walletAddress: userWalletAddress,
-            assetIdentifiers: assetIdentifiers[0],
+            assetIdentifiers,
           })
         );
       }

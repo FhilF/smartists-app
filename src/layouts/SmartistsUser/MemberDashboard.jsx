@@ -47,11 +47,7 @@ function Dashboard(props) {
   const location = useLocation();
   const params = useParams();
   const alert = useAlert();
-  const [cover, setCover] = useState(
-    !isEmpty(smartistsUserData) && smartistsUserData.coverPictureURL
-      ? smartistsUserData.coverPictureURL
-      : null
-  );
+  const [cover, setCover] = useState(null);
   const uploadImageOptions = {
     maxSizeMB: 4.5,
     maxWidthOrHeight: 1920,
@@ -71,6 +67,13 @@ function Dashboard(props) {
   const studioRouteMatch = useMatch(":address/studio/*");
 
   // console.log(homeRouteMatch)
+  useEffect(() => {
+    setCover(
+      !isEmpty(smartistsUserData) && smartistsUserData.coverPictureURL
+        ? smartistsUserData.coverPictureURL
+        : null
+    );
+  }, [smartistsUserData]);
 
   const checkFormat = (fileExt, formats) => {
     if (!formats.includes(fileExt)) {
@@ -86,11 +89,7 @@ function Dashboard(props) {
       await deleteFileFromStorage(fileName);
 
       const updateSmartistsUser = await axios.put(
-        `${apiServer}/smartistsusers/${
-          smartistsUserData[
-            isMainnet ? "walletAddress" : "walletAddressTestnet"
-          ]
-        }`,
+        `${apiServer}/smartistsusers/${smartistsUserData.walletAddress}`,
         { coverPictureURL: null }
       );
 
@@ -146,13 +145,11 @@ function Dashboard(props) {
             }
           );
           const updateSmartistsUser = await axios.put(
-            `${apiServer}/smartistsusers/${
-              smartistsUserData[
-                isMainnet ? "walletAddress" : "walletAddressTestnet"
-              ]
-            }`,
+            `${apiServer}/smartistsusers/${smartistsUserData.walletAddress}`,
             { coverPictureURL: res.url }
           );
+
+          console.log(updateSmartistsUser);
 
           const newSmartistsUser = updateSmartistsUser.data.SmartistsUser;
 

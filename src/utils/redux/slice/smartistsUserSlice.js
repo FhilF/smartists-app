@@ -7,6 +7,7 @@ import {
   smartistsContractAddress,
   accountsApi,
   isMainnet,
+  asset_identifiers
 } from "config";
 
 import { apiServer } from "config";
@@ -76,6 +77,7 @@ export const getSmartistsMemberNftHoldingsAsync = createAsyncThunk(
     return nonFungibleTokensApi
       .getNftHoldings({
         principal: payload.walletAddress,
+        asset_identifiers: payload.assetIdentifiers,
       })
       .then((res) => {
         return { list: res.results, walletAddress: payload.walletAddress };

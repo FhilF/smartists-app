@@ -362,6 +362,7 @@ const Owned = (props) => {
         dispatch(
           getSmartistsMemberNftHoldingsAsync({
             walletAddress: userWalletAddress,
+            assetIdentifiers,
           })
         );
       }
@@ -388,6 +389,7 @@ const Owned = (props) => {
         dispatch(
           getSmartistsMemberNftHoldingsAsync({
             walletAddress: userWalletAddress,
+            assetIdentifiers,
           })
         );
       }

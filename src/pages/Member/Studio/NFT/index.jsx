@@ -290,7 +290,7 @@ const Owned = (props) => {
           dispatch(
             getSessionedMemberNftHoldingsAsync({
               walletAddress: userWalletAddress,
-              assetIdentifiers,
+              assetIdentifiers: assetIdentifiers[0],
             })
           );
           setPendingMints(pendingTx);
@@ -337,12 +337,12 @@ const Owned = (props) => {
   useEffect(() => {
     if (isSessionedUser) {
       if (sessionedMemberState.nftList.status === "idle") {
-        // dispatch(
-        //   getSessionedMemberNftHoldingsAsync({
-        //     walletAddress: userWalletAddress,
-        //     assetIdentifiers,
-        //   })
-        // );
+        dispatch(
+          getSessionedMemberNftHoldingsAsync({
+            walletAddress: userWalletAddress,
+            assetIdentifiers: assetIdentifiers[0],
+          })
+        );
       }
       if (sessionedMemberState.nftList.status === "fulfilled") {
         setGenuineList(sessionedMemberState.nftList.data);
@@ -362,7 +362,7 @@ const Owned = (props) => {
         dispatch(
           getSmartistsMemberNftHoldingsAsync({
             walletAddress: userWalletAddress,
-            assetIdentifiers,
+            assetIdentifiers: assetIdentifiers[0],
           })
         );
       }
@@ -389,7 +389,7 @@ const Owned = (props) => {
         dispatch(
           getSmartistsMemberNftHoldingsAsync({
             walletAddress: userWalletAddress,
-            assetIdentifiers,
+            assetIdentifiers: assetIdentifiers[0],
           })
         );
       }

@@ -29,14 +29,9 @@ function ChildRoutes(props) {
           <Route
             path="/nft"
             element={
-              <NFT {...props} />
-              // <div className="w-full mt-12 px-8">
-              //   <div className="mt-32 flex justify-center">
-              //     <h3 className="text-base text-gray-400">
-              //       NFT not yet availablea
-              //     </h3>
-              //   </div>
-              // </div>
+              <div className="p-6">
+                <NFT {...props} isArtUser={true}/>
+              </div>
             }
           />
         )}

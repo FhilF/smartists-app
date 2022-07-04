@@ -15,7 +15,7 @@ function LicensingAgreements(props) {
     showTerms,
     setShowTerms,
     modalOnly,
-    continueFn,
+    continueFn,text
   } = props;
   const [page, setPage] = useState(1);
   const handleDialog = () => {
@@ -65,7 +65,7 @@ function LicensingAgreements(props) {
             className="cursor-pointer form-checkbox text-red-900"
           />
           <p className="text-sm font-semibold leading-tight text-gray-700 ml-2">
-            I agree to the Licensing Terms & Conditions
+            {text}
           </p>
         </div>
       )}

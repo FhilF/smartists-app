@@ -22,6 +22,7 @@ function PendingSale(props) {
     setSearchParams,
     userSessionedWalletAddress,
     userWalletAddress,
+    isArtUser,
   } = props;
   const navigate = useNavigate();
 
@@ -29,7 +30,6 @@ function PendingSale(props) {
   const [nftList, setNftList] = useState([]);
   useEffect(() => {
     const fetchMarketItems = async () => {
-
       try {
         const lastTokenId = await smartContractsApi.callReadOnlyFunction({
           contractAddress: smartistsContractAddress,
@@ -140,7 +140,12 @@ function PendingSale(props) {
           </ul>
         </div>
 
-        <div className=" grid grid-cols-3 gap-6 mt-10">
+        <div
+          className={classNames(
+            "grid gap-6 mt-10",
+            isArtUser ? "grid-cols-4" : "grid-cols-3"
+          )}
+        >
           {orderBy(
             nftList,
             (item) => parseInt(item.price.substr(1)),

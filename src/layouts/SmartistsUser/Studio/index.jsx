@@ -26,7 +26,7 @@ function Studio(props) {
       pathname: `/${smartistsUserData[isMainnet ? "walletAddress" : "walletAddressTestnet"]}/studio/project`,
     },
     {
-      name: "NFT",
+      name: "NFTs",
       pathname: `/${smartistsUserData[isMainnet ? "walletAddress" : "walletAddressTestnet"]}/studio/nft`,
     },
   ];

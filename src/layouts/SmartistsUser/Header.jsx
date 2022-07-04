@@ -78,6 +78,17 @@ function Header(props) {
                   FAQs
                 </a>
               </li>
+              <li className="nav-menu hover:text-gray-900">
+                <a
+                  href="/guides"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/guides");
+                  }}
+                >
+                  Guides
+                </a>
+              </li>
               {/* <li className="nav-menu hover:text-gray-900">
                 <a
                   href="/guides"

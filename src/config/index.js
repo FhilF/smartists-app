@@ -34,15 +34,17 @@ export const smartistsContractAddress = isMainnet
   ? "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
   : "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W";
 
-export const assetIdentifiers = [
-  "ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W.genuine-v2::Genuine",
-];
+export const assetIdentifiers = isMainnet
+  ? []
+  : isMocknet
+  ? ["ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.genuine::Genuine"]
+  : ["ST1ABV52JBXCNGX6K9DV7M60V4HN2ZWZVKVMNDR2W.genuine-v2::Genuine"];
 
 export const contractName = isMainnet
-? ""
-: isMocknet
-? "genuine"
-: "genuine-v2";
+  ? ""
+  : isMocknet
+  ? "genuine"
+  : "genuine-v2";
 
 export const StacksApiUrl = isMainnet
   ? "https://stacks-node-api.mainnet.stacks.co"

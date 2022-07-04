@@ -457,6 +457,7 @@ function Mint() {
                         alert={alert}
                         showTerms={showTerms}
                         setShowTerms={setShowTerms}
+                        text="I agree to the Licensing terms and Conditions that will apply to the use of my artwork file."
                       />
                     </div>
                     <div className="w-full flex justify-center flex-col mt-8 items-center">

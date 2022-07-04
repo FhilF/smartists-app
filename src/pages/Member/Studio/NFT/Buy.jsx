@@ -57,6 +57,7 @@ function Buy(props) {
         modalOnly={true}
         alert={alert}
         continueFn={contractBuy}
+        text="I agree to the Licensing terms and Conditions that apply to the use of this artwork file."
       />
     </>
   );

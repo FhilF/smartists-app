@@ -38,6 +38,7 @@ function NFT(props) {
     setSignedInSmartistsUser,
     smartistsUserData,
     smartistsUserSession,
+    isArtUser,
   } = props;
 
   const alert = useAlert();
@@ -140,22 +141,23 @@ function NFT(props) {
                 Get testnet STX
               </button>
             )}
-
-            <button
-              className="px-8 py-2 text-white shadow rounded-full bg-red-900"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(
-                  `/${
-                    smartistsUserData[
-                      isMainnet ? "walletAddress" : "walletAddressTestnet"
-                    ]
-                  }/studio/nft/mint`
-                );
-              }}
-            >
-              Mint NFT
-            </button>
+            {!isArtUser && (
+              <button
+                className="px-8 py-2 text-white shadow rounded-full bg-red-900"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(
+                    `/${
+                      smartistsUserData[
+                        isMainnet ? "walletAddress" : "walletAddressTestnet"
+                      ]
+                    }/studio/nft/mint`
+                  );
+                }}
+              >
+                Mint NFT
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -173,21 +175,21 @@ function NFT(props) {
               setSearchParams(searchParams);
             }}
           >
-            Owned
+            My Gallery
           </li>
           <li
             className={classNames(
               "text-sm cursor-pointer ml-6",
-              searchParams.get("tab") === "pending-sales" &&
+              searchParams.get("tab") === "pending-transfers" &&
                 "border-red-900 border-solid  border-b-2"
             )}
             onClick={() => {
-              searchParams.set("tab", "pending-sales");
+              searchParams.set("tab", "pending-transfers");
               searchParams.set("type", "sold");
               setSearchParams(searchParams);
             }}
           >
-            Pending Sales
+            Pending Transfers
           </li>
         </ul>
       </div>
@@ -198,14 +200,16 @@ function NFT(props) {
             smartistsUserData={smartistsUserData}
             isSessionedUser={isSessionedUser}
             userSessionedWalletAddress={userSessionedWalletAddress}
+            isArtUser={isArtUser}
           />
         )}
-        {searchParams.get("tab") === "pending-sales" && (
+        {searchParams.get("tab") === "pending-transfers" && (
           <PendingSales
             searchParams={searchParams}
             setSearchParams={setSearchParams}
             userWalletAddress={userWalletAddress}
             userSessionedWalletAddress={userSessionedWalletAddress}
+            isArtUser={isArtUser}
           />
         )}
       </div>
@@ -225,6 +229,7 @@ const Owned = (props) => {
     isSessionedUser,
     userWalletAddress,
     userSessionedWalletAddress,
+    isArtUser,
   } = props;
   const dispatch = useDispatch();
   const [pageRoute, setPageRoute] = useState("all");
@@ -402,7 +407,12 @@ const Owned = (props) => {
         !isError ? (
           genuineList.length !== 0 || pendingMints.length !== 0 ? (
             <>
-              <div className=" grid grid-cols-3 gap-6">
+              <div
+                className={classNames(
+                  "grid gap-6",
+                  isArtUser ? "grid-cols-4" : "grid-cols-3"
+                )}
+              >
                 {pendingMints.map((el, i) => {
                   const contractName =
                     el.contract_call.contract_id.split(".")[1];

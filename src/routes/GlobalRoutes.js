@@ -2,11 +2,13 @@ import React from "react";
 import { Route } from "react-router-dom";
 import FAQs from "../pages/FAQs";
 import Guides from "pages/Guides";
-import CreateAccount from "pages/Guides/CreateAccount";
+import Artists from "pages/Guides/Artists";
+import ArtUser from "pages/Guides/ArtUser";
 
 const globalRoutes = [
   <Route path="/guides" key="/guides" element={<Guides />} />,
-  <Route path="/guides/create-account-on-smartists" key="/guides/create-account-on-smartists" element={<CreateAccount />} />,
+  <Route path="/guides/artist-guide" key="/guides/artist-guide" element={<Artists />} />,
+  <Route path="/guides/art-user-guide" key="/guides/art-user-guide" element={<ArtUser />} />,
   <Route path="/faqs/:id" key="/documentation" element={<FAQs />} />,
   <Route path="/faqs" key="/documentation" element={<FAQs />} />,
 ];

@@ -3,7 +3,7 @@ import { FaDiscord } from "react-icons/fa";
 
 function Footer() {
   return (
-    <div>
+    <div className="h-full w-full flex flex-col p-4 md:p-8 lg:p-0 lg:max-w-4xl xl:max-w-6xl 2xl:max-w-screen-xl mx-auto">
       <div className="mb-10">
         <hr />
         <div className="w-full py-2">
@@ -43,7 +43,7 @@ function Footer() {
                     Confidentiality Agreement
                   </a>
                 </li>
-                <li className="py-1">
+                {/* <li className="py-1">
                   <a
                     href="https://app.sigle.io/mirlo.id.blockstack/-enOx2p77fP7jGScBDkDp"
                     target="_blank"
@@ -57,7 +57,7 @@ function Footer() {
                   <p className="text-xs font-semibold text-gray-300 cursor-default">
                     General and Special Licensing Terms
                   </p>
-                </li>
+                </li> */}
               </ul>
             </div>
             <div></div>

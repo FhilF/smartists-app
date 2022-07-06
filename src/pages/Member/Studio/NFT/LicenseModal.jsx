@@ -79,7 +79,7 @@ function ListModal(props) {
               <div>
                 <div className="flex">
                   <p className=" font-medium text-gray-600 text-lg flex-1">
-                    {isBuyingLicense ? "Buy license" : "Renew license"}
+                    {isBuyingLicense ? "Activate license" : "Renew license"}
                   </p>
                   <div className="flex items-center ">
                     <span

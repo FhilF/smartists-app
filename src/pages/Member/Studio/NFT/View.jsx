@@ -1568,8 +1568,8 @@ const Content = (props) => {
                             </span>
                             <span className="ml-4 text-gray-600 font-medium flex-1">
                               {isLicensingPendingTx
-                                ? "Buy License Pending..."
-                                : "Buy License"}
+                                ? "Activate License Pending..."
+                                : "Activate License"}
                             </span>
                             <span>
                               {isLicensingPendingTx ? (

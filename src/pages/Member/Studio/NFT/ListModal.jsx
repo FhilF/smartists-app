@@ -155,6 +155,12 @@ function ListModal(props) {
                         {price && `${price} STX`}
                       </p>
                     </div>
+                    <div className="mt-2 flex">
+                      <p className="text-xs text-gray-800 flex-1">Fee</p>
+                      <p className="text-xs text-gray-800">
+                        0 STX
+                      </p>
+                    </div>
                   </div>
                   <div className="w-full">
                     <hr className="w-full mb-0" />

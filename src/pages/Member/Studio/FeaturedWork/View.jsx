@@ -26,7 +26,11 @@ function View(props) {
   const params = useParams();
   const paramsId = params.id;
   const paramsAddress = params.address;
-  const isSessionedUser = smartistsUserSession.walletAddress === paramsAddress;
+  const isSessionedUser =
+    smartistsUserSession[
+      isMainnet ? "walletAddress" : "walletAddressTestnet"
+    ] === paramsAddress;
+
   const featuredWork = useSelector(selectSmartistsUser).featuredWork;
   useEffect(() => {
     if (!featuredWork.data) {
@@ -51,7 +55,7 @@ function View(props) {
 
 const Content = (props) => {
   const { featuredWork, navigate, isSessionedUser } = props;
-  console.log(featuredWork)
+  console.log(featuredWork);
   return (
     <div className="w-full">
       <Grid className="w-full">
@@ -64,7 +68,11 @@ const Content = (props) => {
                 onClick={(e) => {
                   e.preventDefault();
                   navigate(
-                    `/${featuredWork.Studio.SmartistsUser[isMainnet ? "walletAddress" : "walletAddressTestnet"]}/studio/featured-work`
+                    `/${
+                      featuredWork.Studio.SmartistsUser[
+                        isMainnet ? "walletAddress" : "walletAddressTestnet"
+                      ]
+                    }/studio/featured-work`
                   );
                   // setViewFeaturedWork({
                   //   index: null,

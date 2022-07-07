@@ -664,7 +664,13 @@ function View(props) {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(`/${smartistsUserSession.walletAddress}`);
+                      navigate(
+                        `/${
+                          smartistsUserSession[
+                            isMainnet ? "walletAddress" : "walletAddressTestnet"
+                          ]
+                        }`
+                      );
                     }}
                     className="px-8 py-2 shadow rounded-full mt-2"
                   >

@@ -26,7 +26,10 @@ function View(props) {
   const params = useParams();
   const paramsId = params.id;
   const paramsAddress = params.address;
-  const isSessionedUser = smartistsUserSession.walletAddress === paramsAddress;
+  const isSessionedUser =
+    smartistsUserSession[
+      isMainnet ? "walletAddress" : "walletAddressTestnet"
+    ] === paramsAddress;
   const featuredProject = useSelector(selectSmartistsUser).featuredProject;
   useEffect(() => {
     if (!featuredProject.data) {
@@ -71,7 +74,11 @@ const Content = (props) => {
                 onClick={(e) => {
                   e.preventDefault();
                   navigate(
-                    `/${featuredProject.Studio.SmartistsUser[isMainnet ? "walletAddress" : "walletAddressTestnet"]}/studio/project`
+                    `/${
+                      featuredProject.Studio.SmartistsUser[
+                        isMainnet ? "walletAddress" : "walletAddressTestnet"
+                      ]
+                    }/studio/project`
                   );
                 }}
               >
@@ -174,13 +181,17 @@ const Content = (props) => {
               <p className="w-full text-base leading-normal">
                 Looking for:{" "}
                 <span className="font-medium">
-                  {featuredProject.requiredSkills.map((skill) => skill.value).join(", ")}
+                  {featuredProject.requiredSkills
+                    .map((skill) => skill.value)
+                    .join(", ")}
                 </span>
               </p>
               <p className="w-full text-base leading-normal">
                 Also looking for:{" "}
                 <span className="font-medium">
-                  {featuredProject.helpers.map((extra) => extra.value).join(", ")}
+                  {featuredProject.helpers
+                    .map((extra) => extra.value)
+                    .join(", ")}
                 </span>
               </p>
               {featuredProject.isListeningForAdvice && (
